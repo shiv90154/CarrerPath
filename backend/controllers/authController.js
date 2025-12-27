@@ -245,17 +245,34 @@ const resendOTP = asyncHandler(async (req, res) => {
     throw new Error('Failed to send OTP email');
   }
 });
-email: user.email,
-  phone: user.phone,
-    role: user.role,
+
+// @desc    Auth user & get token
+// @route   POST /api/users/login
+// @access  Public
+const authUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
       avatar: user.avatar,
-        emailVerified: user.emailVerified,
-          token: generateToken(user._id),
+      emailVerified: user.emailVerified,
+      token: generateToken(user._id),
     });
   } else {
-  res.status(401);
-  throw new Error('Invalid email or password');
-}
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
 });
 
 // @desc    Get user profile
@@ -388,83 +405,6 @@ const getAdminProfile = asyncHandler(async (req, res) => {
   } else {
     res.status(404);
     throw new Error('Admin not found');
-  }
-});
-
-// @desc    Resend OTP for email verification
-// @route   POST /api/users/resend-otp
-// @access  Public
-const resendOTP = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-
-  // Check if user already exists
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400);
-    throw new Error('User already exists with this email');
-  }
-
-  // Check if there's an existing OTP request
-  const existingData = otpStore.get(email);
-  if (!existingData) {
-    res.status(400);
-    throw new Error('No OTP request found for this email. Please start registration again.');
-  }
-
-  // Generate new 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // Update OTP with new expiration (5 minutes)
-  otpStore.set(email, {
-    otp,
-    expires: Date.now() + 5 * 60 * 1000, // 5 minutes
-    name: existingData.name
-  });
-
-  // Email template
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Email Verification - EduTech Institute (Resent)',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-          <h1 style="color: white; margin: 0;">EduTech Institute</h1>
-        </div>
-        <div style="padding: 30px; background-color: #f9f9f9;">
-          <h2 style="color: #333;">Hello ${existingData.name}!</h2>
-          <p style="color: #666; font-size: 16px;">Here's your new verification code as requested.</p>
-          
-          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-            <h3 style="color: #333; margin-bottom: 10px;">Your New Verification Code</h3>
-            <div style="font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; font-family: monospace;">
-              ${otp}
-            </div>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">This code will expire in 5 minutes</p>
-          </div>
-          
-          <p style="color: #666;">If you didn't request this verification, please ignore this email.</p>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-            <p style="color: #999; font-size: 12px;">
-              This is an automated message, please do not reply to this email.
-            </p>
-          </div>
-        </div>
-      </div>
-    `
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.json({
-      message: 'New OTP sent successfully to your email',
-      email: email
-    });
-  } catch (error) {
-    console.error('Email sending error:', error);
-    res.status(500);
-    throw new Error('Failed to send OTP email');
   }
 });
 
