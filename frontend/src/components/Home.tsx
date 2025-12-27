@@ -13,6 +13,9 @@ const Home: React.FC = () => {
   return (
     <main className="bg-[#F8FAFC] text-[#111827] overflow-x-hidden">
 
+    <section id="notices">
+        <Notices />
+      </section>
       {/* ================= HERO ================= */}
       <section id="home">
         <Hero />
@@ -21,9 +24,7 @@ const Home: React.FC = () => {
       {/* ================= NOTICES (OPTIONAL) ================= */}
       {/* Uncomment when needed */}
 
-      <section id="notices">
-        <Notices />
-      </section>
+  
 
 
       {/* ================= WHY CHOOSE US ================= */}
