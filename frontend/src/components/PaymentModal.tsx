@@ -31,6 +31,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
         try {
             console.log('Processing free content access for:', product);
 
+            if (!user?.token) {
+                setError('Authentication required. Please login again.');
+                return;
+            }
+
             const config = {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
@@ -89,6 +94,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
             }
 
             // Create Razorpay order
+            if (!user?.token) {
+                setError('Authentication required. Please login again.');
+                return;
+            }
+
             const config = {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
@@ -123,7 +133,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
                 key: razorpayKey,
                 amount: data.amount,
                 currency: data.currency,
-                name: 'EduTech Institute',
+                name: 'Career Pathway Institute',
                 description: data.description,
                 order_id: data.razorpayOrderId,
                 prefill: {
