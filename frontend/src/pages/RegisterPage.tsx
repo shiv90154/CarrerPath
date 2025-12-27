@@ -77,7 +77,7 @@ const RegisterPage: React.FC = () => {
         setError(null);
 
         try {
-            await axios.post('http://localhost:5000/api/users/send-otp', {
+            await axios.post('https://carrerpath-m48v.onrender.com/api/users/send-otp', {
                 email: formData.email,
                 name: formData.name
             });
@@ -108,7 +108,7 @@ const RegisterPage: React.FC = () => {
         setError(null);
 
         try {
-            const { data } = await axios.post('http://localhost:5000/api/users/verify-otp', {
+            const { data } = await axios.post('https://carrerpath-m48v.onrender.com/api/users/verify-otp', {
                 email: formData.email,
                 otp: otp,
                 phone: formData.phone,
@@ -132,7 +132,7 @@ const RegisterPage: React.FC = () => {
         setError(null);
 
         try {
-            await axios.post('http://localhost:5000/api/users/resend-otp', {
+            await axios.post('https://carrerpath-m48v.onrender.com/api/users/resend-otp', {
                 email: formData.email
             });
 

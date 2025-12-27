@@ -56,7 +56,7 @@ const EbooksPage: React.FC = () => {
     const fetchEbooks = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get<Ebook[]>('http://localhost:5000/api/ebooks');
+            const { data } = await axios.get<Ebook[]>('https://carrerpath-m48v.onrender.com/api/ebooks');
             setEbooks(data);
             setError(null);
         } catch (err: any) {

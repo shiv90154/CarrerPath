@@ -28,7 +28,7 @@ const AdminNoticeCreatePage: React.FC = () => {
         try {
             setLoading(true);
             const { data } = await axios.post(
-                'http://localhost:5000/api/notices',
+                'https://carrerpath-m48v.onrender.com/api/notices',
                 formData,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );

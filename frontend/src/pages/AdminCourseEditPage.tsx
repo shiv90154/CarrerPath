@@ -64,7 +64,7 @@ const AdminCourseEditPage: React.FC = () => {
               Authorization: `Bearer ${user.token}`,
             },
           };
-          const { data } = await axios.get<CourseData & { videos: any[] }>(`http://localhost:5000/api/courses/admin/${id}`, config);
+          const { data } = await axios.get<CourseData & { videos: any[] }>(`https://carrerpath-m48v.onrender.com/api/courses/admin/${id}`, config);
           setTitle(data.title);
           setDescription(data.description);
           setFullDescription(data.fullDescription || '');
@@ -123,11 +123,11 @@ const AdminCourseEditPage: React.FC = () => {
 
       if (id) {
         // Update course
-        response = await axios.put(`http://localhost:5000/api/courses/admin/${id}`, courseData, config);
+        response = await axios.put(`https://carrerpath-m48v.onrender.com/api/courses/admin/${id}`, courseData, config);
         alert('Course updated successfully');
       } else {
         // Create new course
-        response = await axios.post('http://localhost:5000/api/courses', courseData, config);
+        response = await axios.post('https://carrerpath-m48v.onrender.com/api/courses', courseData, config);
         alert('Course created successfully');
       }
       navigate('/admin/courses');
@@ -154,7 +154,7 @@ const AdminCourseEditPage: React.FC = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      await axios.post(`http://localhost:5000/api/courses/admin/${courseId}/videos`, formData, config);
+      await axios.post(`https://carrerpath-m48v.onrender.com/api/courses/admin/${courseId}/videos`, formData, config);
       alert('Video uploaded successfully');
       // TODO: Refresh course videos after upload
     } catch (err: any) {

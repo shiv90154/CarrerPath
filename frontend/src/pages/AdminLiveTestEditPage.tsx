@@ -47,7 +47,7 @@ const AdminLiveTestEditPage: React.FC = () => {
             },
           };
           // TODO: Implement backend route for admin to get single live test
-          const { data } = await axios.get<LiveTestFormData>(`http://localhost:5000/api/livetests/admin/${id}`, config);
+          const { data } = await axios.get<LiveTestFormData>(`https://carrerpath-m48v.onrender.com/api/livetests/admin/${id}`, config);
           setTitle(data.title);
           setDescription(data.description);
           setStartTime(data.startTime.substring(0, 16)); // Format for datetime-local input
@@ -85,12 +85,12 @@ const AdminLiveTestEditPage: React.FC = () => {
       if (id) {
         // Update live test
         // TODO: Implement backend route for admin to update live test
-        response = await axios.put(`http://localhost:5000/api/livetests/admin/${id}`, liveTestPayload, config);
+        response = await axios.put(`https://carrerpath-m48v.onrender.com/api/livetests/admin/${id}`, liveTestPayload, config);
         alert('Live Test updated successfully');
       } else {
         // Create new live test
         // TODO: Implement backend route for admin to create live test
-        response = await axios.post('http://localhost:5000/api/livetests/admin', liveTestPayload, config);
+        response = await axios.post('https://carrerpath-m48v.onrender.com/api/livetests/admin', liveTestPayload, config);
         alert('Live Test created successfully');
       }
       navigate('/admin/livetests');

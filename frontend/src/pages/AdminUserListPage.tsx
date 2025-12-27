@@ -77,7 +77,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
         setLoading(true);
         try {
             await axios.put(
-                `http://localhost:5000/api/admin/users/${user._id}/status`,
+                `https://carrerpath-m48v.onrender.com/api/admin/users/${user._id}/status`,
                 { isActive: !user.isActive },
                 { headers: { Authorization: `Bearer ${currentUser.token}` } }
             );
@@ -370,7 +370,7 @@ const AdminUserListPage: React.FC = () => {
             });
 
             const { data } = await axios.get<UsersResponse>(
-                `http://localhost:5000/api/admin/users?${params}`,
+                `https://carrerpath-m48v.onrender.com/api/admin/users?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 

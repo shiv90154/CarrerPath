@@ -14,7 +14,7 @@ const EbookDebug: React.FC = () => {
     const fetchEbooks = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get('http://localhost:5000/api/ebooks');
+            const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/ebooks');
             setEbooks(data);
             console.log('Ebooks fetched:', data);
         } catch (err: any) {
@@ -28,7 +28,7 @@ const EbookDebug: React.FC = () => {
     const fetchEbookDetail = async (id: string) => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`http://localhost:5000/api/ebooks/${id}`);
+            const { data } = await axios.get(`https://carrerpath-m48v.onrender.com/api/ebooks/${id}`);
             setSelectedEbook(data);
             console.log('Ebook detail fetched:', data);
         } catch (err: any) {
@@ -120,7 +120,7 @@ const EbookDebug: React.FC = () => {
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Debug Info</h2>
                 <div className="bg-gray-100 p-4 rounded">
-                    <p><strong>API Base URL:</strong> http://localhost:5000/api/ebooks</p>
+                    <p><strong>API Base URL:</strong> https://carrerpath-m48v.onrender.com/api/ebooks</p>
                     <p><strong>Total Ebooks:</strong> {ebooks.length}</p>
                     <p><strong>Current Route:</strong> {window.location.pathname}</p>
                     <p><strong>Browser:</strong> {navigator.userAgent}</p>

@@ -87,7 +87,7 @@ const AdminNoticeListPage: React.FC = () => {
             });
 
             const { data } = await axios.get<NoticesResponse>(
-                `http://localhost:5000/api/notices/admin/all?${params}`,
+                `https://carrerpath-m48v.onrender.com/api/notices/admin/all?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
@@ -109,7 +109,7 @@ const AdminNoticeListPage: React.FC = () => {
 
         try {
             const { data } = await axios.get(
-                'http://localhost:5000/api/notices/admin/stats',
+                'https://carrerpath-m48v.onrender.com/api/notices/admin/stats',
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
@@ -126,7 +126,7 @@ const AdminNoticeListPage: React.FC = () => {
 
         try {
             await axios.patch(
-                `http://localhost:5000/api/notices/admin/toggle-publish/${id}`,
+                `https://carrerpath-m48v.onrender.com/api/notices/admin/toggle-publish/${id}`,
                 {},
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -146,7 +146,7 @@ const AdminNoticeListPage: React.FC = () => {
 
         try {
             await axios.delete(
-                `http://localhost:5000/api/notices/admin/${id}`,
+                `https://carrerpath-m48v.onrender.com/api/notices/admin/${id}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 

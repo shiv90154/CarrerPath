@@ -57,7 +57,7 @@ const AdminEbookListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      const { data } = await axios.get<Ebook[]>('http://localhost:5000/api/ebooks/admin', config);
+      const { data } = await axios.get<Ebook[]>('https://carrerpath-m48v.onrender.com/api/ebooks/admin', config);
       setEbooks(data);
       setError(null);
     } catch (err: any) {
@@ -111,7 +111,7 @@ const AdminEbookListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.delete(`http://localhost:5000/api/ebooks/admin/${id}`, config);
+      await axios.delete(`https://carrerpath-m48v.onrender.com/api/ebooks/admin/${id}`, config);
       setEbooks(ebooks.filter(ebook => ebook._id !== id));
       alert('Ebook deleted successfully');
     } catch (err: any) {
@@ -125,7 +125,7 @@ const AdminEbookListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.put(`http://localhost:5000/api/ebooks/admin/${id}`,
+      await axios.put(`https://carrerpath-m48v.onrender.com/api/ebooks/admin/${id}`,
         { isActive: !currentStatus }, config);
 
       setEbooks(ebooks.map(ebook =>
@@ -142,7 +142,7 @@ const AdminEbookListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.put(`http://localhost:5000/api/ebooks/admin/${id}`,
+      await axios.put(`https://carrerpath-m48v.onrender.com/api/ebooks/admin/${id}`,
         { isFeatured: !currentFeatured }, config);
 
       setEbooks(ebooks.map(ebook =>

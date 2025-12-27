@@ -68,7 +68,7 @@ const ChangePasswordPage: React.FC = () => {
                 headers: { Authorization: `Bearer ${user?.token}` }
             };
 
-            await axios.put('http://localhost:5000/api/users/change-password', {
+            await axios.put('https://carrerpath-m48v.onrender.com/api/users/change-password', {
                 currentPassword: formData.currentPassword,
                 newPassword: formData.newPassword,
             }, config);

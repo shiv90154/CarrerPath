@@ -123,7 +123,7 @@ const ManageCurrentAffairs: React.FC = () => {
       params.append('page', pagination.page.toString());
       params.append('limit', pagination.limit.toString());
 
-      const response = await axios.get(`http://localhost:5000/api/current-affairs/admin/all?${params}`, {
+      const response = await axios.get(`https://carrerpath-m48v.onrender.com/api/current-affairs/admin/all?${params}`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
 
@@ -141,7 +141,7 @@ const ManageCurrentAffairs: React.FC = () => {
 
   const fetchStatistics = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/current-affairs/stats/summary', {
+      const response = await axios.get('https://carrerpath-m48v.onrender.com/api/current-affairs/stats/summary', {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
 
@@ -196,8 +196,8 @@ const ManageCurrentAffairs: React.FC = () => {
 
     try {
       const url = editingId
-        ? `http://localhost:5000/api/current-affairs/${editingId}`
-        : 'http://localhost:5000/api/current-affairs';
+        ? `https://carrerpath-m48v.onrender.com/api/current-affairs/${editingId}`
+        : 'https://carrerpath-m48v.onrender.com/api/current-affairs';
 
       const method = editingId ? 'put' : 'post';
 
@@ -239,7 +239,7 @@ const ManageCurrentAffairs: React.FC = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/current-affairs/${id}`, {
+      await axios.delete(`https://carrerpath-m48v.onrender.com/api/current-affairs/${id}`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
 
@@ -254,7 +254,7 @@ const ManageCurrentAffairs: React.FC = () => {
 
   const handleTogglePublish = async (id: string, currentStatus: boolean) => {
     try {
-      await axios.patch(`http://localhost:5000/api/current-affairs/toggle-publish/${id}`, {}, {
+      await axios.patch(`https://carrerpath-m48v.onrender.com/api/current-affairs/toggle-publish/${id}`, {}, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
 

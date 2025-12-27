@@ -62,16 +62,16 @@ const AdminDashboardDebug: React.FC = () => {
         setTestResults([]);
 
         // Test 1: Basic API health
-        await runTest('API Health Check', 'http://localhost:5000/health');
+        await runTest('API Health Check', 'https://carrerpath-m48v.onrender.com/health');
 
         // Test 2: Admin routes health
-        await runTest('Admin Routes Health', 'http://localhost:5000/api/admin/health');
+        await runTest('Admin Routes Health', 'https://carrerpath-m48v.onrender.com/api/admin/health');
 
         // Test 3: Admin test route (requires auth)
-        await runTest('Admin Test Route', 'http://localhost:5000/api/admin/test');
+        await runTest('Admin Test Route', 'https://carrerpath-m48v.onrender.com/api/admin/test');
 
         // Test 4: Admin stats (the failing one)
-        await runTest('Admin Stats', 'http://localhost:5000/api/admin/stats');
+        await runTest('Admin Stats', 'https://carrerpath-m48v.onrender.com/api/admin/stats');
     };
 
     const clearResults = () => {

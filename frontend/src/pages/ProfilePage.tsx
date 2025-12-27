@@ -23,7 +23,7 @@ const ProfilePage: React.FC = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user?.token}` }
             };
-            const { data } = await axios.get('http://localhost:5000/api/users/profile', config);
+            const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/users/profile', config);
             setProfileData(data);
             setLoading(false);
         } catch (err: any) {

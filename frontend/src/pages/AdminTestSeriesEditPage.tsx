@@ -83,7 +83,7 @@ const AdminTestSeriesEditPage: React.FC = () => {
           Authorization: `Bearer ${user?.token}`,
         },
       };
-      const { data } = await axios.get(`http://localhost:5000/api/testseries/admin/${id}`, config);
+      const { data } = await axios.get(`https://carrerpath-m48v.onrender.com/api/testseries/admin/${id}`, config);
 
       setFormData({
         title: data.title,
@@ -143,10 +143,10 @@ const AdminTestSeriesEditPage: React.FC = () => {
       };
 
       if (id) {
-        await axios.put(`http://localhost:5000/api/testseries/admin/${id}`, submitData, config);
+        await axios.put(`https://carrerpath-m48v.onrender.com/api/testseries/admin/${id}`, submitData, config);
         alert('Test series updated successfully');
       } else {
-        await axios.post('http://localhost:5000/api/testseries/admin', submitData, config);
+        await axios.post('https://carrerpath-m48v.onrender.com/api/testseries/admin', submitData, config);
         alert('Test series created successfully');
       }
       navigate('/admin/testseries');

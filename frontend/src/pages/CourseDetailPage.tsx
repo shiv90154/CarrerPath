@@ -74,7 +74,7 @@ const CourseDetailPage: React.FC = () => {
             } : {};
 
             const { data } = await axios.get<Course>(
-                `http://localhost:5000/api/courses/${id}`,
+                `https://carrerpath-m48v.onrender.com/api/courses/${id}`,
                 config
             );
 
@@ -108,7 +108,7 @@ const CourseDetailPage: React.FC = () => {
                 };
 
                 const { data } = await axios.get(
-                    `http://localhost:5000/api/courses/${id}/videos/${video._id}`,
+                    `https://carrerpath-m48v.onrender.com/api/courses/${id}/videos/${video._id}`,
                     config
                 );
 
@@ -142,7 +142,7 @@ const CourseDetailPage: React.FC = () => {
 
             // Create Razorpay order
             const { data: orderData } = await axios.post(
-                'http://localhost:5000/api/payments/orders',
+                'https://carrerpath-m48v.onrender.com/api/payments/orders',
                 {
                     amount: course.price,
                     courseId: course._id
@@ -162,7 +162,7 @@ const CourseDetailPage: React.FC = () => {
                     try {
                         // Verify payment
                         await axios.post(
-                            'http://localhost:5000/api/payments/verify',
+                            'https://carrerpath-m48v.onrender.com/api/payments/verify',
                             {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,

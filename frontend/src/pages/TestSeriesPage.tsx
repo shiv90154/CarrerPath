@@ -54,7 +54,7 @@ const TestSeriesPage: React.FC = () => {
     const fetchTestSeries = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get<TestSeries[]>('http://localhost:5000/api/testseries');
+            const { data } = await axios.get<TestSeries[]>('https://carrerpath-m48v.onrender.com/api/testseries');
             setTestSeries(data);
             setError(null);
         } catch (err: any) {

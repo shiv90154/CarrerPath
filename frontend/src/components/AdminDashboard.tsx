@@ -80,7 +80,7 @@ const AdminDashboard: React.FC = () => {
       };
 
       const { data } = await axios.get(
-        'http://localhost:5000/api/notices/admin/stats',
+        'https://carrerpath-m48v.onrender.com/api/notices/admin/stats',
         config
       );
 
@@ -101,11 +101,11 @@ const AdminDashboard: React.FC = () => {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
 
-      console.log('Making request to:', 'http://localhost:5000/api/admin/stats');
+      console.log('Making request to:', 'https://carrerpath-m48v.onrender.com/api/admin/stats');
       console.log('With config:', config);
 
       const { data } = await axios.get<DashboardStats>(
-        'http://localhost:5000/api/admin/stats',
+        'https://carrerpath-m48v.onrender.com/api/admin/stats',
         config
       );
 

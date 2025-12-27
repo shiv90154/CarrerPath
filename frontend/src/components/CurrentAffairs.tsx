@@ -95,7 +95,7 @@ const CurrentAffairsPage: React.FC = () => {
       params.append('page', pagination.page.toString());
       params.append('limit', pagination.limit.toString());
 
-      const response = await axios.get(`http://localhost:5000/api/current-affairs/published?${params}`);
+      const response = await axios.get(`https://carrerpath-m48v.onrender.com/api/current-affairs/published?${params}`);
 
       if (response.data.success) {
         setCurrentAffairs(response.data.data);

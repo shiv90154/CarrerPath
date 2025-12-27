@@ -36,7 +36,7 @@ const AdminPaymentListPage: React.FC = () => {
           },
         };
         // TODO: Implement backend route for admin to get all payments
-        const { data } = await axios.get<Payment[]>('http://localhost:5000/api/payments/admin', config);
+        const { data } = await axios.get<Payment[]>('https://carrerpath-m48v.onrender.com/api/payments/admin', config);
         setPayments(data);
         setLoading(false);
       } catch (err) {

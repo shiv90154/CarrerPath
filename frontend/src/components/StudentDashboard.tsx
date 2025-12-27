@@ -128,13 +128,13 @@ const StudentDashboard: React.FC = () => {
                     paymentsResponse,
                     statsResponse
                 ] = await Promise.all([
-                    axios.get<Course[]>('http://localhost:5000/api/student/courses', config),
-                    axios.get<TestSeries[]>('http://localhost:5000/api/student/testseries', config),
-                    axios.get<Ebook[]>('http://localhost:5000/api/student/ebooks', config),
-                    axios.get<StudyMaterial[]>('http://localhost:5000/api/student/studymaterials', config),
-                    axios.get<Result[]>('http://localhost:5000/api/student/results', config),
-                    axios.get<Payment[]>('http://localhost:5000/api/student/payments', config),
-                    axios.get<Stats>('http://localhost:5000/api/student/stats', config)
+                    axios.get<Course[]>('https://carrerpath-m48v.onrender.com/api/student/courses', config),
+                    axios.get<TestSeries[]>('https://carrerpath-m48v.onrender.com/api/student/testseries', config),
+                    axios.get<Ebook[]>('https://carrerpath-m48v.onrender.com/api/student/ebooks', config),
+                    axios.get<StudyMaterial[]>('https://carrerpath-m48v.onrender.com/api/student/studymaterials', config),
+                    axios.get<Result[]>('https://carrerpath-m48v.onrender.com/api/student/results', config),
+                    axios.get<Payment[]>('https://carrerpath-m48v.onrender.com/api/student/payments', config),
+                    axios.get<Stats>('https://carrerpath-m48v.onrender.com/api/student/stats', config)
                 ]);
 
                 setPurchasedCourses(coursesResponse.data);

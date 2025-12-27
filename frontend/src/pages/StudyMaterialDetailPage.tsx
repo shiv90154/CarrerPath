@@ -52,7 +52,7 @@ const StudyMaterialDetailPage: React.FC = () => {
       } : {};
 
       const { data } = await axios.get(
-        `http://localhost:5000/api/studymaterials/${id}`,
+        `https://carrerpath-m48v.onrender.com/api/studymaterials/${id}`,
         config
       );
 
@@ -67,7 +67,7 @@ const StudyMaterialDetailPage: React.FC = () => {
   const fetchRelatedMaterials = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:5000/api/studymaterials?examType=${material?.examType}&limit=3`
+        `https://carrerpath-m48v.onrender.com/api/studymaterials?examType=${material?.examType}&limit=3`
       );
       setRelatedMaterials(data.materials.filter((m: StudyMaterial) => m._id !== id).slice(0, 3));
     } catch (err) {

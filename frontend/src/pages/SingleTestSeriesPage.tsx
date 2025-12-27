@@ -38,7 +38,7 @@ const SingleTestSeriesPage: React.FC = () => {
             Authorization: user ? `Bearer ${user.token}` : '',
           },
         };
-        const { data } = await axios.get<TestSeries>(`http://localhost:5000/api/testseries/${id}`, config);
+        const { data } = await axios.get<TestSeries>(`https://carrerpath-m48v.onrender.com/api/testseries/${id}`, config);
         setTestSeries(data);
         setLoading(false);
 
@@ -95,7 +95,7 @@ const SingleTestSeriesPage: React.FC = () => {
         },
       };
       const { data: { razorpayOrderId, amount, currency, name, email, phone, description } } = await axios.post(
-        'http://localhost:5000/api/payments/orders',
+        'https://carrerpath-m48v.onrender.com/api/payments/orders',
         { amount: testSeries.price, testSeriesId: testSeries._id },
         orderConfig
       );
@@ -116,7 +116,7 @@ const SingleTestSeriesPage: React.FC = () => {
               },
             };
             await axios.post(
-              'http://localhost:5000/api/payments/verify',
+              'https://carrerpath-m48v.onrender.com/api/payments/verify',
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,

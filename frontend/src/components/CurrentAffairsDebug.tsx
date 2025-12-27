@@ -14,7 +14,7 @@ const CurrentAffairsDebug: React.FC = () => {
     const fetchCurrentAffairs = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/current-affairs/published');
+            const response = await axios.get('https://carrerpath-m48v.onrender.com/api/current-affairs/published');
             console.log('Current Affairs API Response:', response.data);
 
             if (response.data.success) {
@@ -31,7 +31,7 @@ const CurrentAffairsDebug: React.FC = () => {
 
     const testSingleCurrentAffair = async (id: string) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/current-affairs/${id}`);
+            const response = await axios.get(`https://carrerpath-m48v.onrender.com/api/current-affairs/${id}`);
             console.log('Single Current Affair:', response.data);
         } catch (err: any) {
             console.error('Error fetching single current affair:', err);
@@ -117,7 +117,7 @@ const CurrentAffairsDebug: React.FC = () => {
 
                     <h2 className="text-xl font-semibold mb-4 mt-6">Debug Info</h2>
                     <div className="bg-gray-100 p-4 rounded">
-                        <p><strong>API Endpoint:</strong> http://localhost:5000/api/current-affairs/published</p>
+                        <p><strong>API Endpoint:</strong> https://carrerpath-m48v.onrender.com/api/current-affairs/published</p>
                         <p><strong>Total Items:</strong> {currentAffairs.length}</p>
                         <p><strong>Current Route:</strong> {window.location.pathname}</p>
                         <p><strong>Loading State:</strong> {loading ? 'Loading' : 'Loaded'}</p>

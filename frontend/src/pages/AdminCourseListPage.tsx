@@ -33,7 +33,7 @@ const AdminCourseListPage: React.FC = () => {
             Authorization: `Bearer ${user.token}`,
           },
         };
-        const { data } = await axios.get<Course[]>('http://localhost:5000/api/courses/admin', config);
+        const { data } = await axios.get<Course[]>('https://carrerpath-m48v.onrender.com/api/courses/admin', config);
         setCourses(data);
         setLoading(false);
       } catch (err) {
@@ -53,7 +53,7 @@ const AdminCourseListPage: React.FC = () => {
             Authorization: `Bearer ${user?.token}`,
           },
         };
-        await axios.delete(`http://localhost:5000/api/courses/admin/${id}`, config);
+        await axios.delete(`https://carrerpath-m48v.onrender.com/api/courses/admin/${id}`, config);
         setCourses(courses.filter((course) => course._id !== id));
       } catch (err) {
         console.error(err);

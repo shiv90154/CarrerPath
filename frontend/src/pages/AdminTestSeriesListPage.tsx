@@ -54,7 +54,7 @@ const AdminTestSeriesListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      const { data } = await axios.get<TestSeries[]>('http://localhost:5000/api/testseries/admin', config);
+      const { data } = await axios.get<TestSeries[]>('https://carrerpath-m48v.onrender.com/api/testseries/admin', config);
       setTestSeries(data);
       setError(null);
     } catch (err: any) {
@@ -100,7 +100,7 @@ const AdminTestSeriesListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.delete(`http://localhost:5000/api/testseries/admin/${id}`, config);
+      await axios.delete(`https://carrerpath-m48v.onrender.com/api/testseries/admin/${id}`, config);
       setTestSeries(testSeries.filter(series => series._id !== id));
       alert('Test series deleted successfully');
     } catch (err: any) {
@@ -114,7 +114,7 @@ const AdminTestSeriesListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.put(`http://localhost:5000/api/testseries/admin/${id}`,
+      await axios.put(`https://carrerpath-m48v.onrender.com/api/testseries/admin/${id}`,
         { isActive: !currentStatus }, config);
 
       setTestSeries(testSeries.map(series =>
@@ -131,7 +131,7 @@ const AdminTestSeriesListPage: React.FC = () => {
       const config = {
         headers: { Authorization: `Bearer ${user?.token}` }
       };
-      await axios.put(`http://localhost:5000/api/testseries/admin/${id}`,
+      await axios.put(`https://carrerpath-m48v.onrender.com/api/testseries/admin/${id}`,
         { isFeatured: !currentFeatured }, config);
 
       setTestSeries(testSeries.map(series =>

@@ -34,7 +34,7 @@ const AdminLiveTestListPage: React.FC = () => {
           },
         };
         // TODO: Implement backend route for admin to get all live tests
-        const { data } = await axios.get<LiveTest[]>('http://localhost:5000/api/livetests/admin', config);
+        const { data } = await axios.get<LiveTest[]>('https://carrerpath-m48v.onrender.com/api/livetests/admin', config);
         setLiveTests(data);
         setLoading(false);
       } catch (err) {
@@ -55,7 +55,7 @@ const AdminLiveTestListPage: React.FC = () => {
           },
         };
         // TODO: Implement backend route for admin to delete live test
-        await axios.delete(`http://localhost:5000/api/livetests/admin/${id}`, config);
+        await axios.delete(`https://carrerpath-m48v.onrender.com/api/livetests/admin/${id}`, config);
         setLiveTests(liveTests.filter((test) => test._id !== id));
       } catch (err) {
         console.error(err);

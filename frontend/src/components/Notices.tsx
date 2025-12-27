@@ -31,7 +31,7 @@ const Notices = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('http://localhost:5000/api/notices/published?limit=15');
+      const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/notices/published?limit=15');
 
       if (data.success) {
         setNotices(data.data);
@@ -97,7 +97,7 @@ const Notices = () => {
   const handleNoticeClick = async (notice: Notice) => {
     // Increment view count
     try {
-      await axios.get(`http://localhost:5000/api/notices/${notice._id}`);
+      await axios.get(`https://carrerpath-m48v.onrender.com/api/notices/${notice._id}`);
     } catch (err) {
       console.error('Error incrementing view count:', err);
     }

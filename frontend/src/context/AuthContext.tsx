@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             },
         };
         const { data } = await axios.post(
-            'http://localhost:5000/api/users/login',
+            'https://carrerpath-m48v.onrender.com/api/users/login',
             { email, password },
             config
         );
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             },
         };
         const { data } = await axios.post(
-            'http://localhost:5000/api/users/register',
+            'https://carrerpath-m48v.onrender.com/api/users/register',
             { name, email, phone, password },
             config
         );

@@ -36,7 +36,7 @@ const PaymentTest: React.FC = () => {
         }
 
         // Test 4: Check API endpoint
-        fetch('http://localhost:5000/api/payments/test', {
+        fetch('https://carrerpath-m48v.onrender.com/api/payments/test', {
             headers: {
                 'Authorization': `Bearer ${user.token}`
             }
@@ -62,7 +62,7 @@ const PaymentTest: React.FC = () => {
         try {
             addResult('🔄 Testing payment creation...');
 
-            const response = await fetch('http://localhost:5000/api/payments/orders', {
+            const response = await fetch('https://carrerpath-m48v.onrender.com/api/payments/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const PaymentTest: React.FC = () => {
                         <div>
                             <strong>API URL:</strong>
                             <span className="ml-2 font-mono">
-                                {import.meta.env.VITE_API_URL || 'http://localhost:5000'}
+                                {import.meta.env.VITE_API_URL || 'https://carrerpath-m48v.onrender.com'}
                             </span>
                         </div>
                     </div>

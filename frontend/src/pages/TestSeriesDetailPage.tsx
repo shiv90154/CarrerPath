@@ -70,7 +70,7 @@ const TestSeriesDetailPage: React.FC = () => {
             } : {};
 
             const { data } = await axios.get<TestSeries>(
-                `http://localhost:5000/api/testseries/${id}`,
+                `https://carrerpath-m48v.onrender.com/api/testseries/${id}`,
                 config
             );
 
@@ -235,8 +235,8 @@ const TestSeriesDetailPage: React.FC = () => {
                                         <div
                                             key={test._id}
                                             className={`border rounded-lg p-4 transition-colors ${isAccessible
-                                                    ? 'hover:bg-gray-50 cursor-pointer border-gray-200'
-                                                    : 'bg-gray-50 border-gray-300'
+                                                ? 'hover:bg-gray-50 cursor-pointer border-gray-200'
+                                                : 'bg-gray-50 border-gray-300'
                                                 }`}
                                             onClick={() => isAccessible && handleTestClick(test)}
                                         >
@@ -252,8 +252,8 @@ const TestSeriesDetailPage: React.FC = () => {
                                                             </span>
                                                         )}
                                                         <span className={`px-2 py-1 rounded text-xs font-medium ${test.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
-                                                                test.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                                                                    'bg-red-100 text-red-800'
+                                                            test.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                                'bg-red-100 text-red-800'
                                                             }`}>
                                                             {test.difficulty}
                                                         </span>

@@ -72,7 +72,7 @@ const CoursesPage: React.FC = () => {
             });
 
             const { data } = await axios.get<CoursesResponse>(
-                `http://localhost:5000/api/courses?${params}`
+                `https://carrerpath-m48v.onrender.com/api/courses?${params}`
             );
 
             setCourses(data.courses);

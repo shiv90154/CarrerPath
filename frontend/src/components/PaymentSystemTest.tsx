@@ -47,7 +47,7 @@ const PaymentSystemTest: React.FC = () => {
 
         // Test 2: Check API URL Configuration
         updateTest('API Configuration', 'pending', 'Checking API URL...');
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://carrerpath-m48v.onrender.com';
         updateTest('API Configuration', 'success', `API URL: ${apiUrl}`);
 
         // Test 3: Test Payment Order Creation

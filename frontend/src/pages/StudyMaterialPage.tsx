@@ -64,16 +64,16 @@ const StudyMaterialPage: React.FC = () => {
       if (selectedFilters.type) params.append('type', selectedFilters.type);
 
       const { data } = await axios.get(
-        `http://localhost:5000/api/studymaterials?${params.toString()}`
+        `https://carrerpath-m48v.onrender.com/api/studymaterials?${params.toString()}`
       );
 
       setMaterials(data.materials);
       setFilters(data.filters);
-      
+
       const total = data.materials.length;
       const free = data.materials.filter((m: StudyMaterial) => m.type === 'Free').length;
       const paid = total - free;
-      
+
       setStats({ total, free, paid });
       setLoading(false);
     } catch (err: any) {
@@ -135,61 +135,61 @@ const StudyMaterialPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-['Inter']">
       {/* Hero Section */}
-  <div className="bg-[#0B1F33] text-white">
-  <div className="container mx-auto px-4 py-16 md:py-20">
+      <div className="bg-[#0B1F33] text-white">
+        <div className="container mx-auto px-4 py-16 md:py-20">
 
-    {/* HEADING */}
-    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center font-poppins leading-tight">
-      Previous Year Question Papers{" "}
-      <span className="text-[#D4AF37]">
-        & Study Materials
-      </span>
-    </h1>
+          {/* HEADING */}
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center font-poppins leading-tight">
+            Previous Year Question Papers{" "}
+            <span className="text-[#D4AF37]">
+              & Study Materials
+            </span>
+          </h1>
 
-    {/* SUBTEXT */}
-    <p className="text-lg md:text-xl text-center max-w-3xl mx-auto text-[#E5E7EB] leading-relaxed mb-10 font-inter">
-      Strengthen your preparation with <strong>exam-relevant previous year papers</strong> 
-      and detailed PDF study material. Explore free samples and unlock complete
-      premium papers for in-depth practice.
-    </p>
+          {/* SUBTEXT */}
+          <p className="text-lg md:text-xl text-center max-w-3xl mx-auto text-[#E5E7EB] leading-relaxed mb-10 font-inter">
+            Strengthen your preparation with <strong>exam-relevant previous year papers</strong>
+            and detailed PDF study material. Explore free samples and unlock complete
+            premium papers for in-depth practice.
+          </p>
 
-    {/* GOLD DIVIDER */}
-    <div className="h-0.75 w-32 bg-[#D4AF37] mx-auto mb-12"></div>
+          {/* GOLD DIVIDER */}
+          <div className="h-0.75 w-32 bg-[#D4AF37] mx-auto mb-12"></div>
 
-    {/* QUICK STATS */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-      
-      <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
-        <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
-          {stats.total}
-        </div>
-        <div className="text-sm text-gray-300 mt-1 font-inter">
-          Total Papers
+          {/* QUICK STATS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+
+            <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
+              <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
+                {stats.total}
+              </div>
+              <div className="text-sm text-gray-300 mt-1 font-inter">
+                Total Papers
+              </div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
+              <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
+                {stats.free}
+              </div>
+              <div className="text-sm text-gray-300 mt-1 font-inter">
+                Free Papers
+              </div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
+              <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
+                {stats.paid}
+              </div>
+              <div className="text-sm text-gray-300 mt-1 font-inter">
+                Premium Papers
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
-
-      <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
-        <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
-          {stats.free}
-        </div>
-        <div className="text-sm text-gray-300 mt-1 font-inter">
-          Free Papers
-        </div>
-      </div>
-
-      <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 text-center border border-white/10 shadow-sm">
-        <div className="text-3xl font-bold font-poppins text-[#D4AF37]">
-          {stats.paid}
-        </div>
-        <div className="text-sm text-gray-300 mt-1 font-inter">
-          Premium Papers
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-</div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-10">
@@ -225,11 +225,10 @@ const StudyMaterialPage: React.FC = () => {
                     <button
                       key={exam}
                       onClick={() => handleFilterChange('examType', exam)}
-                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm ${
-                        selectedFilters.examType === exam
+                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm ${selectedFilters.examType === exam
                           ? 'bg-[#1E3A8A] text-white shadow-sm'
                           : 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
-                      }`}
+                        }`}
                     >
                       {exam}
                     </button>
@@ -245,11 +244,10 @@ const StudyMaterialPage: React.FC = () => {
                     <button
                       key={year}
                       onClick={() => handleFilterChange('year', year)}
-                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm ${
-                        selectedFilters.year === year
+                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm ${selectedFilters.year === year
                           ? 'bg-[#1E3A8A] text-white shadow-sm'
                           : 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
-                      }`}
+                        }`}
                     >
                       {year}
                     </button>
@@ -265,15 +263,14 @@ const StudyMaterialPage: React.FC = () => {
                     <button
                       key={type}
                       onClick={() => handleFilterChange('type', type)}
-                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm flex items-center gap-2 ${
-                        selectedFilters.type === type
+                      className={`px-4 py-2.5 rounded-lg font-medium transition-all font-['Inter'] text-sm flex items-center gap-2 ${selectedFilters.type === type
                           ? type === 'Free'
                             ? 'bg-[#D4AF37] text-white shadow-sm'
                             : 'bg-[#B91C1C] text-white shadow-sm'
                           : type === 'Free'
-                          ? 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
-                          : 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
-                      }`}
+                            ? 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
+                            : 'bg-gray-50 text-[#111827] hover:bg-gray-100 border border-[#E5E7EB]'
+                        }`}
                     >
                       {type === 'Paid' && <Lock className="w-3.5 h-3.5" />}
                       {type}
@@ -364,15 +361,14 @@ const StudyMaterialPage: React.FC = () => {
                       e.currentTarget.src = '/images/default-paper-cover.jpg';
                     }}
                   />
-                  
+
                   {/* Badges */}
                   <div className="absolute top-4 right-4 flex flex-col gap-2">
                     <span
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-['Inter'] ${
-                        material.type === 'Free'
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-['Inter'] ${material.type === 'Free'
                           ? 'bg-[#D4AF37] text-white'
                           : 'bg-[#B91C1C] text-white'
-                      }`}
+                        }`}
                     >
                       {material.type === 'Free' ? 'FREE' : 'PREMIUM'}
                     </span>
@@ -444,11 +440,10 @@ const StudyMaterialPage: React.FC = () => {
 
                     <Link
                       to={`/study-materials/${material._id}`}
-                      className={`px-5 py-2.5 rounded-lg font-medium transition-colors font-['Inter'] flex items-center gap-2 ${
-                        material.type === 'Free'
+                      className={`px-5 py-2.5 rounded-lg font-medium transition-colors font-['Inter'] flex items-center gap-2 ${material.type === 'Free'
                           ? 'bg-[#D4AF37] text-white hover:bg-amber-600'
                           : 'bg-[#1E3A8A] text-white hover:bg-[#0B1F33]'
-                      }`}
+                        }`}
                     >
                       {material.type === 'Free' ? (
                         <>
@@ -474,7 +469,7 @@ const StudyMaterialPage: React.FC = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-center text-[#0B1F33] mb-12 font-['Poppins']">
             Why Choose Our Study Materials?
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-sm border border-[#E5E7EB] hover:border-[#1E3A8A] transition-colors">
               <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-5">
@@ -511,7 +506,7 @@ const StudyMaterialPage: React.FC = () => {
         {/* Footer Note */}
         <div className="mt-12 text-center text-[#6B7280] text-sm font-['Inter'] leading-relaxed max-w-3xl mx-auto">
           <p className="mb-4">
-            <span className="font-semibold text-[#0B1F33]">Note:</span> Free papers include complete question papers. 
+            <span className="font-semibold text-[#0B1F33]">Note:</span> Free papers include complete question papers.
             Premium papers include detailed solutions, answer keys, and expert analysis.
           </p>
           <p>

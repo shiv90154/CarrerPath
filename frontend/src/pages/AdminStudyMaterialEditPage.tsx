@@ -67,7 +67,7 @@ const AdminStudyMaterialEditPage: React.FC = () => {
       };
 
       const { data } = await axios.get(
-        `http://localhost:5000/api/studymaterials/admin/${id}`,
+        `https://carrerpath-m48v.onrender.com/api/studymaterials/admin/${id}`,
         config
       );
 
@@ -178,7 +178,7 @@ const AdminStudyMaterialEditPage: React.FC = () => {
       if (id) {
         // Update
         response = await axios.put(
-          `http://localhost:5000/api/studymaterials/admin/${id}`,
+          `https://carrerpath-m48v.onrender.com/api/studymaterials/admin/${id}`,
           formDataToSend,
           config
         );
@@ -186,7 +186,7 @@ const AdminStudyMaterialEditPage: React.FC = () => {
       } else {
         // Create
         response = await axios.post(
-          'http://localhost:5000/api/studymaterials/admin',
+          'https://carrerpath-m48v.onrender.com/api/studymaterials/admin',
           formDataToSend,
           config
         );

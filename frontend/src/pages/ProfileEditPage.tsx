@@ -86,7 +86,7 @@ const ProfileEditPage: React.FC = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user?.token}` }
             };
-            const { data } = await axios.get('http://localhost:5000/api/users/profile', config);
+            const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/users/profile', config);
 
             setProfileData({
                 name: data.name || '',
@@ -168,7 +168,7 @@ const ProfileEditPage: React.FC = () => {
                 headers: { Authorization: `Bearer ${user?.token}` }
             };
 
-            const { data } = await axios.put('http://localhost:5000/api/users/profile', profileData, config);
+            const { data } = await axios.put('https://carrerpath-m48v.onrender.com/api/users/profile', profileData, config);
 
             // Update user context
             updateUser(data);

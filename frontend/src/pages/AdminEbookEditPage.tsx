@@ -72,7 +72,7 @@ const AdminEbookEditPage: React.FC = () => {
           Authorization: `Bearer ${user?.token}`,
         },
       };
-      const { data } = await axios.get(`http://localhost:5000/api/ebooks/admin/${id}`, config);
+      const { data } = await axios.get(`https://carrerpath-m48v.onrender.com/api/ebooks/admin/${id}`, config);
 
       setFormData({
         title: data.title,
@@ -132,7 +132,7 @@ const AdminEbookEditPage: React.FC = () => {
       };
 
       const { data } = await axios.post(
-        `http://localhost:5000/api/ebooks/upload/${type}`,
+        `https://carrerpath-m48v.onrender.com/api/ebooks/upload/${type}`,
         formData,
         config
       );
@@ -182,10 +182,10 @@ const AdminEbookEditPage: React.FC = () => {
       };
 
       if (id) {
-        await axios.put(`http://localhost:5000/api/ebooks/admin/${id}`, submitData, config);
+        await axios.put(`https://carrerpath-m48v.onrender.com/api/ebooks/admin/${id}`, submitData, config);
         alert('Ebook updated successfully');
       } else {
-        await axios.post('http://localhost:5000/api/ebooks/admin', submitData, config);
+        await axios.post('https://carrerpath-m48v.onrender.com/api/ebooks/admin', submitData, config);
         alert('Ebook created successfully');
       }
       navigate('/admin/ebooks');

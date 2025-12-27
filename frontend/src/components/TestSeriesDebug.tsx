@@ -14,7 +14,7 @@ const TestSeriesDebug: React.FC = () => {
     const fetchTestSeries = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get('http://localhost:5000/api/testseries');
+            const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/testseries');
             setTestSeries(data);
             console.log('Test series fetched:', data);
         } catch (err: any) {
@@ -28,7 +28,7 @@ const TestSeriesDebug: React.FC = () => {
     const fetchSeriesDetail = async (id: string) => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`http://localhost:5000/api/testseries/${id}`);
+            const { data } = await axios.get(`https://carrerpath-m48v.onrender.com/api/testseries/${id}`);
             setSelectedSeries(data);
             console.log('Test series detail fetched:', data);
         } catch (err: any) {
@@ -145,7 +145,7 @@ const TestSeriesDebug: React.FC = () => {
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Debug Info</h2>
                 <div className="bg-gray-100 p-4 rounded">
-                    <p><strong>API Base URL:</strong> http://localhost:5000/api/testseries</p>
+                    <p><strong>API Base URL:</strong> https://carrerpath-m48v.onrender.com/api/testseries</p>
                     <p><strong>Total Test Series:</strong> {testSeries.length}</p>
                     <p><strong>Current Route:</strong> {window.location.pathname}</p>
                     <p><strong>User Agent:</strong> {navigator.userAgent}</p>

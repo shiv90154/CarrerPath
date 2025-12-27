@@ -60,7 +60,7 @@ const EbookDetailPage: React.FC = () => {
             } : {};
 
             const { data } = await axios.get<Ebook>(
-                `http://localhost:5000/api/ebooks/${id}`,
+                `https://carrerpath-m48v.onrender.com/api/ebooks/${id}`,
                 config
             );
 

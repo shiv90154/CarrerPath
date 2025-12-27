@@ -50,7 +50,7 @@ const AdminStudyMaterialListPage: React.FC = () => {
         params: filters,
       };
 
-      const { data } = await axios.get('http://localhost:5000/api/studymaterials/admin', config);
+      const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/studymaterials/admin', config);
       setMaterials(data);
       setLoading(false);
     } catch (err: any) {
@@ -67,7 +67,7 @@ const AdminStudyMaterialListPage: React.FC = () => {
         },
       };
 
-      const { data } = await axios.get('http://localhost:5000/api/studymaterials/admin/stats', config);
+      const { data } = await axios.get('https://carrerpath-m48v.onrender.com/api/studymaterials/admin/stats', config);
       setStats(data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
@@ -83,7 +83,7 @@ const AdminStudyMaterialListPage: React.FC = () => {
           },
         };
 
-        await axios.delete(`http://localhost:5000/api/studymaterials/admin/${id}`, config);
+        await axios.delete(`https://carrerpath-m48v.onrender.com/api/studymaterials/admin/${id}`, config);
         setMaterials(materials.filter((material) => material._id !== id));
         fetchStats(); // Refresh stats
       } catch (err: any) {
@@ -102,7 +102,7 @@ const AdminStudyMaterialListPage: React.FC = () => {
       };
 
       await axios.put(
-        `http://localhost:5000/api/studymaterials/admin/${id}`,
+        `https://carrerpath-m48v.onrender.com/api/studymaterials/admin/${id}`,
         { isActive: !currentStatus },
         config
       );
