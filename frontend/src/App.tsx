@@ -65,13 +65,11 @@ import RefundPolicy from "./components/RefundPolicy";
 // Add this import
 import NotFoundPage from './components/NotFoundPage';
 import ManageCurrentAffairs from './pages/ManageCurrentAffairs';
-import EnvDebug from './components/EnvDebug';
 function App() {
   return (
     <div className="App">
       <ScrollToTop />
       <AutoCallPopup />
-      <EnvDebug />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
