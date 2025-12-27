@@ -2,24 +2,47 @@
 const isDevelopment = import.meta.env.MODE === 'development' || import.meta.env.DEV;
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+// Debug logging for environment detection
+console.log('Environment Debug:', {
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD,
+  hostname: window.location.hostname,
+  isDevelopment,
+  isLocalhost,
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_RAZORPAY_KEY_ID: import.meta.env.VITE_RAZORPAY_KEY_ID
+});
+
 // Determine API URL with fallback logic
 export const API_BASE_URL = (() => {
   // First try environment variable
   if (import.meta.env.VITE_API_URL) {
+    console.log('Using VITE_API_URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
   
   // If no env var, use smart detection
   if (isDevelopment || isLocalhost) {
+    console.log('Using localhost API');
     return 'http://localhost:5000';
   }
   
   // Production fallback
+  console.log('Using production fallback API');
   return 'https://carrerpath-m48v.onrender.com';
 })();
 
 // Razorpay Key with fallback
-export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_fallback_key';
+export const RAZORPAY_KEY_ID = (() => {
+  const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
+  if (key && key !== 'your_razorpay_key_id_here') {
+    console.log('Using configured Razorpay key:', key.substring(0, 10) + '...');
+    return key;
+  }
+  console.warn('Razorpay key not configured, using fallback');
+  return 'rzp_test_fallback_key';
+})();
 
 // API Endpoints
 export const API_ENDPOINTS = {
