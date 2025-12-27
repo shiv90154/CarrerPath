@@ -8,7 +8,8 @@ const {
     getAdminProfile,
     getUserProfile,
     updateUserProfile,
-    changePassword
+    changePassword,
+    getOTPForTesting
 } = require('../controllers/authController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -18,6 +19,9 @@ const router = express.Router();
 router.post('/send-otp', sendOTP);
 router.post('/resend-otp', resendOTP);
 router.post('/verify-otp', verifyOTPAndRegister);
+
+// Development only - get OTP for testing
+router.get('/get-otp/:email', getOTPForTesting);
 
 // Legacy registration (for backward compatibility)
 router.route('/register').post(registerUser);

@@ -77,7 +77,7 @@ const Hero: React.FC = () => {
               <img
                 src={slide.image}
                 alt={`Hero Slide ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 loading="lazy"
               />
 

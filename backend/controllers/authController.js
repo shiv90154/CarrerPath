@@ -43,29 +43,40 @@ const sendOTP = asyncHandler(async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Email Verification - EduTech Institute',
+    subject: 'Email Verification - Career Pathway Institute',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-          <h1 style="color: white; margin: 0;">EduTech Institute</h1>
+        <div style="background: linear-gradient(135deg, #0B1F33 0%, #1E3A8A 100%); padding: 20px; text-align: center;">
+          <h1 style="color: #D4AF37; margin: 0;">Career Pathway Institute</h1>
+          <p style="color: white; margin: 5px 0 0 0;">Email Verification</p>
         </div>
         <div style="padding: 30px; background-color: #f9f9f9;">
           <h2 style="color: #333;">Welcome ${name}!</h2>
-          <p style="color: #666; font-size: 16px;">Thank you for registering with EduTech Institute. Please verify your email address to complete your registration.</p>
+          <p style="color: #666; font-size: 16px;">Thank you for registering with Career Pathway Institute. Please verify your email address to complete your registration.</p>
           
-          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border-left: 4px solid #D4AF37;">
             <h3 style="color: #333; margin-bottom: 10px;">Your Verification Code</h3>
-            <div style="font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; font-family: monospace;">
+            <div style="font-size: 32px; font-weight: bold; color: #0B1F33; letter-spacing: 5px; font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 8px; display: inline-block;">
               ${otp}
             </div>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">This code will expire in 5 minutes</p>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">⏰ This code will expire in 5 minutes</p>
+          </div>
+          
+          <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #2e7d32; margin: 0; font-size: 14px;">
+              <strong>Next Steps:</strong><br>
+              1. Enter this code in the verification form<br>
+              2. Complete your registration<br>
+              3. Start your learning journey with us!
+            </p>
           </div>
           
           <p style="color: #666;">If you didn't request this verification, please ignore this email.</p>
           
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
             <p style="color: #999; font-size: 12px;">
-              This is an automated message, please do not reply to this email.
+              This is an automated message from Career Pathway Institute.<br>
+              Please do not reply to this email.
             </p>
           </div>
         </div>
@@ -74,15 +85,33 @@ const sendOTP = asyncHandler(async (req, res) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Email sending timeout')), 15000) // 15 second timeout
+    );
+
+    await Promise.race([emailPromise, timeoutPromise]);
+
     res.json({
       message: 'OTP sent successfully to your email',
       email: email
     });
   } catch (error) {
     console.error('Email sending error:', error);
-    res.status(500);
-    throw new Error('Failed to send OTP email');
+
+    // If email fails, still allow the process to continue
+    // The OTP is already stored, user can try resending
+    if (error.message === 'Email sending timeout') {
+      res.status(202).json({
+        message: 'OTP generated successfully. If you don\'t receive the email within 2 minutes, please try resending.',
+        email: email,
+        warning: 'Email delivery may be delayed'
+      });
+    } else {
+      res.status(500);
+      throw new Error('Failed to send OTP email. Please try again.');
+    }
   }
 });
 
@@ -209,40 +238,71 @@ const resendOTP = asyncHandler(async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'New Verification Code - Career Pathway',
+    subject: 'New Verification Code - Career Pathway Institute',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #0B1F33 0%, #1E3A8A 100%); padding: 20px; text-align: center;">
-          <h1 style="color: #D4AF37; margin: 0;">Career Pathway</h1>
+          <h1 style="color: #D4AF37; margin: 0;">Career Pathway Institute</h1>
+          <p style="color: white; margin: 5px 0 0 0;">New Verification Code</p>
         </div>
         <div style="padding: 30px; background-color: #f9f9f9;">
           <h2 style="color: #333;">New Verification Code</h2>
-          <p style="color: #666; font-size: 16px;">Here's your new verification code:</p>
+          <p style="color: #666; font-size: 16px;">Here's your new verification code as requested:</p>
           
-          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border-left: 4px solid #D4AF37;">
             <h3 style="color: #333; margin-bottom: 10px;">Your New Verification Code</h3>
-            <div style="font-size: 32px; font-weight: bold; color: #1E3A8A; letter-spacing: 5px; font-family: monospace;">
+            <div style="font-size: 32px; font-weight: bold; color: #0B1F33; letter-spacing: 5px; font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 8px; display: inline-block;">
               ${otp}
             </div>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">This code will expire in 5 minutes</p>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">⏰ This code will expire in 5 minutes</p>
+          </div>
+          
+          <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #f57c00; margin: 0; font-size: 14px;">
+              <strong>💡 Tip:</strong> Make sure to complete your registration within 5 minutes to avoid requesting another code.
+            </p>
           </div>
           
           <p style="color: #666;">If you didn't request this verification, please ignore this email.</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+            <p style="color: #999; font-size: 12px;">
+              This is an automated message from Career Pathway Institute.<br>
+              Please do not reply to this email.
+            </p>
+          </div>
         </div>
       </div>
     `
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Email sending timeout')), 15000) // 15 second timeout
+    );
+
+    await Promise.race([emailPromise, timeoutPromise]);
+
     res.json({
       message: 'New OTP sent successfully to your email',
       email: email
     });
   } catch (error) {
     console.error('Email sending error:', error);
-    res.status(500);
-    throw new Error('Failed to send OTP email');
+
+    // If email fails, still allow the process to continue
+    if (error.message === 'Email sending timeout') {
+      res.status(202).json({
+        message: 'New OTP generated successfully. If you don\'t receive the email within 2 minutes, please check your spam folder.',
+        email: email,
+        warning: 'Email delivery may be delayed'
+      });
+    } else {
+      res.status(500);
+      throw new Error('Failed to send OTP email. Please try again.');
+    }
   }
 });
 
@@ -408,6 +468,37 @@ const getAdminProfile = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get OTP for testing (development only)
+// @route   GET /api/users/get-otp/:email
+// @access  Public (development only)
+const getOTPForTesting = asyncHandler(async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403);
+    throw new Error('This endpoint is not available in production');
+  }
+
+  const { email } = req.params;
+  const storedData = otpStore.get(email);
+
+  if (!storedData) {
+    res.status(404);
+    throw new Error('No OTP found for this email');
+  }
+
+  if (Date.now() > storedData.expires) {
+    otpStore.delete(email);
+    res.status(400);
+    throw new Error('OTP has expired');
+  }
+
+  res.json({
+    email: email,
+    otp: storedData.otp,
+    expires: new Date(storedData.expires).toLocaleString(),
+    name: storedData.name
+  });
+});
+
 module.exports = {
   sendOTP,
   resendOTP,
@@ -418,5 +509,6 @@ module.exports = {
   updateUserProfile,
   changePassword,
   getAdminProfile,
+  getOTPForTesting,
 };
 
