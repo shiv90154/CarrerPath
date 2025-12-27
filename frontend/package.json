@@ -38,8 +38,9 @@
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  }
+"engines": {
+  "node": "18.x",
+  "npm": "9.x"
+}
+
 }
