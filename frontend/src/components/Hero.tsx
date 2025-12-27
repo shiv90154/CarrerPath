@@ -57,15 +57,7 @@ const Hero: React.FC = () => {
             <li>✔ Offline | Online | Hybrid learning modes</li>
           </ul>
 
-          {/* CTA BUTTONS */}
-          <div className="mt-8 flex flex-wrap gap-4">
-            <button className="px-6 py-3 bg-[#D4AF37] text-[#0B1F33] font-semibold rounded-md hover:bg-[#c6a233] transition">
-              Book Free Demo
-            </button>
-            <button className="px-6 py-3 border border-white/30 text-white rounded-md hover:bg-white/10 transition">
-              Explore Courses
-            </button>
-          </div>
+      
         </div>
 
         {/* RIGHT SLIDER */}
