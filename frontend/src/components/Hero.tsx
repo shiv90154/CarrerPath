@@ -15,16 +15,16 @@ const slides: Slide[] = [
 
 const Hero: React.FC = () => {
   const [current, setCurrent] = useState<number>(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   const startSlider = () => {
-    intervalRef.current = setInterval(() => {
+    intervalRef.current = window.setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 4000);
   };
 
   const stopSlider = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) window.clearInterval(intervalRef.current);
   };
 
   useEffect(() => {
@@ -77,11 +77,10 @@ const Hero: React.FC = () => {
           {slides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                index === current
-                  ? "opacity-100 scale-100 z-10"
-                  : "opacity-0 scale-105"
-              }`}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === current
+                ? "opacity-100 scale-100 z-10"
+                : "opacity-0 scale-105"
+                }`}
             >
               <img
                 src={slide.image}
@@ -103,11 +102,10 @@ const Hero: React.FC = () => {
                 key={index}
                 aria-label={`Go to slide ${index + 1}`}
                 onClick={() => setCurrent(index)}
-                className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-                  index === current
-                    ? "bg-[#D4AF37] scale-125"
-                    : "bg-white/50 hover:bg-white"
-                }`}
+                className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${index === current
+                  ? "bg-[#D4AF37] scale-125"
+                  : "bg-white/50 hover:bg-white"
+                  }`}
               />
             ))}
           </div>

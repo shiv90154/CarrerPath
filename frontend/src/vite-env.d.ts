@@ -8,3 +8,17 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+// Add Node.js types for Vite environment
+declare namespace NodeJS {
+  interface ProcessEnv {
+    NODE_ENV: 'development' | 'production' | 'test'
+  }
+}
+
+// Add process for browser environment
+declare const process: {
+  env: {
+    NODE_ENV: string
+  }
+}

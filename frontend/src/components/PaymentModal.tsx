@@ -248,7 +248,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
                 </p>
 
                 {/* Debug Info (remove in production) */}
-                {process.env.NODE_ENV === 'development' && (
+                {import.meta.env.DEV && (
                     <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
                         <p><strong>Debug Info:</strong></p>
                         <p>Razorpay Key: {import.meta.env.VITE_RAZORPAY_KEY_ID || 'Not set'}</p>

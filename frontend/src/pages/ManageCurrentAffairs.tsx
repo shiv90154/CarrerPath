@@ -20,7 +20,7 @@ import {
   X
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+// CSS will be handled by the component itself
 
 interface CurrentAffair {
   _id: string;
