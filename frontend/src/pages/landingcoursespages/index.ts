@@ -1,0 +1,14 @@
+// Export all course pages for easy importing
+export { default as IASCoursePage } from './ias';
+export { default as HASHPASCoursePage } from './has-hpas';
+export { default as AlliedServicesCoursePage } from './allied-services';
+export { default as NaibTehsildarCoursePage } from './naib-tehsildar';
+export { default as SSCCoursePage } from './ssc';
+export { default as BankingCoursePage } from './banking';
+export { default as CDSCoursePage } from './cds';
+export { default as UGCNETSETCoursePage } from './ugc-net-set';
+export { default as TETCTETCoursePage } from './tet-ctet';
+export { default as TGTPGTJBTCoursePage } from './tgt-pgt-jbt';
+export { default as PatwariPoliceCoursePage } from './patwari-police';
+export { default as JOAITStateCoursePage } from './joa-it-state';
+export { default as CourseTemplate } from './CourseTemplate';

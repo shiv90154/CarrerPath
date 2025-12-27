@@ -1,0 +1,164 @@
+@import 'tailwindcss';
+/* ===============================
+   GLOBAL RESET & BASE
+================================ */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background-color: #F8FAFC;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===============================
+   UNIQUE TEXT SELECTION
+================================ */
+::selection {
+  background-color: rgba(212, 175, 55, 0.35); /* Gold */
+  color: #0B1F33; /* Navy */
+}
+
+::-moz-selection {
+  background-color: rgba(212, 175, 55, 0.35);
+  color: #0B1F33;
+}
+
+/* ===============================
+   SCROLLBAR (MODERN & CLEAN)
+================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #1E3A8A,
+    #0B1F33
+  );
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0B1F33;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1E3A8A #F1F5F9;
+}
+
+/* ===============================
+   FOCUS STATES (ACCESSIBILITY)
+================================ */
+:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ===============================
+   LINKS
+================================ */
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* ===============================
+   BUTTONS & INTERACTIVE
+================================ */
+button {
+  font-family: 'Inter', sans-serif;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===============================
+   IMAGES
+================================ */
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ===============================
+   CARDS (OPTIONAL UTILITY)
+================================ */
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.75rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* ===============================
+   TEXT HELPERS
+================================ */
+.text-muted {
+  color: #6B7280;
+}
+
+.heading {
+  font-family: 'Poppins', sans-serif;
+  color: #0B1F33;
+}
+
+/* ===============================
+   SMOOTH FADE-IN (OPTIONAL)
+================================ */
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
