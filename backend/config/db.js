@@ -2,17 +2,22 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    // MongoDB Atlas connection options (updated for latest Mongoose)
+    console.log('🔍 Connecting to MongoDB Atlas...');
+
+    // Check if MONGO_URI is set
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI environment variable is not set');
+    }
+
+    // Simplified connection options for better compatibility
     const options = {
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      minPoolSize: 5, // Maintain a minimum of 5 socket connections
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-      family: 4 // Use IPv4, skip trying IPv6
+      serverSelectionTimeoutMS: 10000, // Increase timeout to 10 seconds
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      minPoolSize: 1, // Reduce minimum pool size
+      maxIdleTimeMS: 30000
     };
 
-    console.log('Connecting to MongoDB Atlas...');
     const conn = await mongoose.connect(process.env.MONGO_URI, options);
 
     console.log(`✅ MongoDB Connected Successfully!`);
@@ -26,7 +31,7 @@ const connectDB = async () => {
     });
 
     mongoose.connection.on('error', (err) => {
-      console.error('❌ Mongoose connection error:', err);
+      console.error('❌ Mongoose connection error:', err.message);
     });
 
     mongoose.connection.on('disconnected', () => {
@@ -44,19 +49,24 @@ const connectDB = async () => {
     console.error('❌ MongoDB Connection Error:');
     console.error(`   Message: ${error.message}`);
 
+    // Specific error handling
     if (error.message.includes('authentication failed')) {
-      console.error('🔐 Authentication failed. Please check your username and password.');
+      console.error('🔐 Authentication failed:');
+      console.error('   - Username: shiva90154_db_user');
+      console.error('   - Check password in connection string');
+      console.error('   - Verify user exists in MongoDB Atlas Database Access');
     } else if (error.message.includes('ENOTFOUND')) {
-      console.error('🌐 Network error. Please check your internet connection.');
+      console.error('🌐 Network error:');
+      console.error('   - Check internet connection');
+      console.error('   - Verify cluster URL: cluster0.egk6uuf.mongodb.net');
     } else if (error.message.includes('MongoServerSelectionError')) {
-      console.error('🔍 Server selection error. Please check your MongoDB Atlas cluster status.');
+      console.error('🔍 Server selection error:');
+      console.error('   - Check MongoDB Atlas cluster status');
+      console.error('   - Verify IP whitelist includes 0.0.0.0/0');
     }
 
-    console.error('💡 Troubleshooting tips:');
-    console.error('   1. Verify your MongoDB Atlas connection string');
-    console.error('   2. Check if your IP address is whitelisted');
-    console.error('   3. Ensure your database user has proper permissions');
-    console.error('   4. Verify your internet connection');
+    console.error('💡 Connection String Format:');
+    console.error('   mongodb+srv://username:password@cluster0.egk6uuf.mongodb.net/database?options');
 
     process.exit(1);
   }
