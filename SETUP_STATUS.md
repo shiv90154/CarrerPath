@@ -128,7 +128,7 @@ npm run dev
    ```
 
 4. **Test API Endpoint**
-   - Visit: http://localhost:5000/api/payments/test
+   - Visit: https://carrerpath-m48v.onrender.com/api/payments/test
    - Should return JSON with system status
 
 ### Common Error Messages:

@@ -127,7 +127,7 @@ Use these test credentials in Razorpay modal:
    ```
 
 2. **Check API Connectivity:**
-   - Visit: http://localhost:5000/api/payments/test
+   - Visit: https://carrerpath-m48v.onrender.com/api/payments/test
    - Should return JSON with system status
 
 3. **Check Browser Console:**

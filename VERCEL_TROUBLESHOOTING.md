@@ -3,7 +3,7 @@
 ## Current Issues Identified:
 
 ### 1. **Environment Variables Not Loading**
-- Error: `POST http://localhost:5000/api/users/login` (should be production URL)
+- Error: `POST https://carrerpath-m48v.onrender.com/api/users/login` (should be production URL)
 - Cause: Vercel environment variables not properly configured or not being loaded
 
 ### 2. **Razorpay Checkout Error**
@@ -38,7 +38,7 @@ Environment Debug: {
 ### Step 2: Check API Calls
 Network tab should show:
 - ✅ `https://carrerpath-m48v.onrender.com/api/users/login`
-- ❌ `http://localhost:5000/api/users/login`
+- ❌ `https://carrerpath-m48v.onrender.com/api/users/login`
 
 ### Step 3: Visual Debug Component
 Look for black debug box in top-right corner showing:
