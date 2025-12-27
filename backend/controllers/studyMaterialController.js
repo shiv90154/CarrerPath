@@ -235,12 +235,16 @@ const getStudyMaterialByIdPublic = asyncHandler(async (req, res) => {
 
   // Check if user has purchased this material (for paid)
   if (req.user && material.type === 'Paid') {
+    // Check both new items array structure and legacy structure
     const order = await Order.findOne({
       user: req.user._id,
-      'items.material': material._id,
+      $or: [
+        { 'items.material': material._id }, // New structure
+        { studyMaterial: material._id }     // Legacy structure (if exists)
+      ],
       isPaid: true,
     });
-    
+
     if (order) {
       userHasPurchased = true;
     }

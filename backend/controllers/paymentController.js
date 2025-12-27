@@ -7,10 +7,128 @@ const Course = require('../models/Course');
 const TestSeries = require('../models/TestSeries');
 const Ebook = require('../models/Ebook');
 const StudyMaterial = require('../models/StudyMaterial');
+const User = require('../models/User');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Helper function to handle free content access
+const handleFreeContentAccess = asyncHandler(async (req, res, { courseId, testSeriesId, ebookId, materialId }) => {
+  const userId = req.user._id;
+
+  try {
+    let product = null;
+    let productType = '';
+    let orderData = {
+      user: userId,
+      paymentMethod: 'free',
+      taxPrice: 0,
+      shippingPrice: 0,
+      totalPrice: 0,
+      isPaid: true,
+      paidAt: new Date(),
+      paymentResult: {
+        id: `free_${Date.now()}`,
+        status: 'completed',
+        update_time: new Date().toISOString(),
+        email_address: req.user.email,
+      },
+    };
+
+    if (courseId) {
+      product = await Course.findById(courseId);
+      productType = 'Course';
+      orderData.course = courseId;
+    } else if (testSeriesId) {
+      product = await TestSeries.findById(testSeriesId);
+      productType = 'TestSeries';
+      orderData.testSeries = testSeriesId;
+    } else if (ebookId) {
+      product = await Ebook.findById(ebookId);
+      productType = 'Ebook';
+      orderData.ebook = ebookId;
+    } else if (materialId) {
+      product = await StudyMaterial.findById(materialId);
+      productType = 'StudyMaterial';
+      orderData.items = [{
+        material: materialId,
+        price: 0,
+        quantity: 1
+      }];
+    }
+
+    if (!product) {
+      res.status(404);
+      throw new Error(`${productType} not found`);
+    }
+
+    // Verify the content is actually free
+    const isFree = product.price === 0 || product.isFree === true || product.type === 'Free';
+    if (!isFree) {
+      res.status(400);
+      throw new Error('This content is not free');
+    }
+
+    // Check if user already has access
+    const existingOrder = await Order.findOne({
+      user: userId,
+      $or: [
+        { course: courseId },
+        { testSeries: testSeriesId },
+        { ebook: ebookId },
+        { 'items.material': materialId }
+      ],
+      isPaid: true,
+    });
+
+    if (existingOrder) {
+      return res.json({
+        success: true,
+        message: 'You already have access to this content',
+        order: existingOrder,
+        alreadyOwned: true
+      });
+    }
+
+    // Create free access order
+    const order = new Order(orderData);
+    const savedOrder = await order.save();
+
+    // Update user's purchased items
+    const user = await User.findById(userId);
+    if (courseId && user.purchasedCourses) {
+      const existingPurchase = user.purchasedCourses.find(
+        pc => pc.course.toString() === courseId
+      );
+      if (!existingPurchase) {
+        user.purchasedCourses.push({
+          course: courseId,
+          purchaseDate: new Date(),
+          progress: 0,
+          completedVideos: []
+        });
+        await user.save();
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Free ${productType.toLowerCase()} access granted successfully!`,
+      order: savedOrder,
+      product: {
+        id: product._id,
+        title: product.title,
+        type: productType.toLowerCase()
+      }
+    });
+
+  } catch (error) {
+    console.error('Free content access error:', error);
+    res.status(500);
+    throw new Error('Failed to grant free access. Please try again.');
+  }
 });
 
 // @desc    Create Razorpay order
@@ -22,9 +140,14 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
   console.log('Creating Razorpay order with data:', { amount, courseId, testSeriesId, ebookId, materialId });
 
   // Validate required fields
-  if (!amount || amount <= 0) {
+  if (amount === undefined || amount === null || amount < 0) {
     res.status(400);
     throw new Error('Valid amount is required');
+  }
+
+  // Handle free content (price = 0) - grant immediate access
+  if (amount === 0) {
+    return await handleFreeContentAccess(req, res, { courseId, testSeriesId, ebookId, materialId });
   }
 
   if (!courseId && !testSeriesId && !ebookId && !materialId) {

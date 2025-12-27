@@ -27,6 +27,45 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const handleFreeContent = async () => {
+        try {
+            console.log('Processing free content access for:', product);
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            const orderData = {
+                amount: 0, // Free content
+                [`${product.type === 'studyMaterial' ? 'materialId' : product.type + 'Id'}`]: product.id,
+            };
+
+            const { data } = await axios.post(
+                buildApiUrl(API_ENDPOINTS.PAYMENT_ORDERS),
+                orderData,
+                config
+            );
+
+            console.log('Free content access granted:', data);
+
+            if (data.success) {
+                alert(data.message || 'Free content access granted! You can now access this content.');
+                onSuccess();
+                onClose();
+            } else {
+                throw new Error(data.message || 'Failed to grant free access');
+            }
+        } catch (error: any) {
+            console.error('Free content access failed:', error);
+            setError(error.response?.data?.message || error.message || 'Failed to access free content');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handlePayment = async () => {
         if (!user) {
             setError('Please login to make a purchase');
@@ -39,7 +78,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
         try {
             console.log('Starting payment process for:', product);
 
-            // Check if Razorpay is loaded
+            // Handle free content (price = 0)
+            if (product.price === 0) {
+                return await handleFreeContent();
+            }
+
+            // Check if Razorpay is loaded for paid content
             if (!window.Razorpay) {
                 throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
             }
@@ -183,7 +227,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
                                     product.type === 'studyMaterial' ? 'Study Material' :
                                         product.type}
                             </p>
-                            <p className="text-lg font-bold text-blue-600">{formatPrice(product.price)}</p>
+                            <p className="text-lg font-bold text-blue-600">
+                                {product.price === 0 ? 'FREE' : formatPrice(product.price)}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -239,7 +285,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
                         disabled={loading}
                         className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? 'Processing...' : `Pay ${formatPrice(product.price)}`}
+                        {loading ? 'Processing...' :
+                            product.price === 0 ? 'Get Free Access' : `Pay ${formatPrice(product.price)}`}
                     </button>
                 </div>
 

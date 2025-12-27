@@ -17,7 +17,6 @@ const router = express.Router();
 
 // Public routes for Live Tests
 router.get('/', optionalAuth, getPublicLiveTests);
-router.get('/:id', optionalAuth, getLiveTestById);
 router.post('/:id/join', protect, joinLiveTest);
 router.post('/:id/submit', protect, submitLiveTestAnswers);
 

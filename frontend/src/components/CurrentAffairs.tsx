@@ -441,36 +441,14 @@ const CurrentAffairsPage: React.FC = () => {
                         )}
                       </button>
 
-                      <div className="flex items-center gap-3">
-                        <button className="p-2 text-[#6B7280] hover:text-[#1E3A8A] hover:bg-blue-50 rounded">
-                          <Bookmark className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 text-[#6B7280] hover:text-[#1E3A8A] hover:bg-blue-50 rounded">
-                          <Share2 className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 text-[#6B7280] hover:text-[#1E3A8A] hover:bg-blue-50 rounded">
-                          <Download className="w-5 h-5" />
-                        </button>
-                      </div>
+                   
                     </div>
 
                     {/* Detailed Content (Collapsible) */}
                     {expandedId === affair._id && (
                       <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
                         <div className="prose prose-sm max-w-none text-[#111827] font-inter">
-                          {/* Debug: Show raw content first */}
-                          <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
-                            <strong>Debug - Raw Content:</strong>
-                            <pre className="mt-2 whitespace-pre-wrap">{affair.detailedContent}</pre>
-                          </div>
-
-                          {/* Render with ReactMarkdown */}
-                          <div className="mb-4">
-                            <strong>Rendered Content:</strong>
-                            <div className="mt-2">
-                              <ReactMarkdown>{affair.detailedContent}</ReactMarkdown>
-                            </div>
-                          </div>
+                    
 
                           {/* Fallback: Render as HTML if ReactMarkdown fails */}
                           <div className="mb-4">
