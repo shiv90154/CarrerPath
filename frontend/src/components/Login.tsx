@@ -104,22 +104,7 @@ const Login: React.FC = () => {
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
 
-                    <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                        <div className="flex justify-between text-sm">
-                            <a
-                                href="/forgot-password"
-                                className="text-[#1E3A8A] hover:underline font-[Inter] font-medium"
-                            >
-                                Forgot password?
-                            </a>
-                            <Link
-                                to="/register-new"
-                                className="text-[#1E3A8A] hover:underline font-[Inter] font-medium"
-                            >
-                                Create account
-                            </Link>
-                        </div>
-                    </div>
+                
                 </form>
 
                 <div className="mt-6 text-center">
