@@ -76,16 +76,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({ data }) => {
                                     </span>
                                 ))}
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 py-4 rounded-lg font-bold text-lg transition-colors duration-300 flex items-center justify-center gap-2">
-                                    <Target className="w-5 h-5" />
-                                    Enroll Now
-                                </button>
-                                <button className="border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-slate-900 px-8 py-4 rounded-lg font-bold text-lg transition-colors duration-300 flex items-center justify-center gap-2">
-                                    <Play className="w-5 h-5" />
-                                    Free Demo
-                                </button>
-                            </div>
+                       
                         </div>
                     </div>
                 </section>
@@ -258,37 +249,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({ data }) => {
                 </section>
 
                 {/* Fees & Demo CTA */}
-                <section className="py-16 bg-gradient-to-r from-yellow-500 to-yellow-400">
-                    <div className="container mx-auto px-4">
-                        <div className="max-w-4xl mx-auto text-center">
-                            <h2 className="text-3xl md:text-4xl font-bold font-['Poppins'] text-slate-900 mb-6">
-                                Fees & Free Demo
-                            </h2>
-                            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 mb-8">
-                                <div className="text-5xl font-bold font-['Poppins'] text-slate-900 mb-2">
-                                    {data.price}
-                                </div>
-                                <p className="text-slate-800 font-['Inter'] text-lg mb-6">
-                                    Complete course with lifetime support
-                                </p>
-                                <div className="bg-slate-900 text-white px-6 py-3 rounded-full inline-block font-bold text-lg mb-6">
-                                    🎁 FREE DEMO CLASS AVAILABLE
-                                </div>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors duration-300 flex items-center justify-center gap-2">
-                                    <Play className="w-5 h-5" />
-                                    Book Free Demo
-                                </button>
-                                <button className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors duration-300 flex items-center justify-center gap-2">
-                                    <Target className="w-5 h-5" />
-                                    Enroll Now
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+           
                 {/* Why Choose Career Pathway */}
                 <section className="py-16 bg-slate-900 text-white">
                     <div className="container mx-auto px-4">

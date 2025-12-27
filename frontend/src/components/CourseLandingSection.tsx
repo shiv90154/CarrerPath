@@ -37,7 +37,7 @@ const CourseLandingSection: React.FC = () => {
             link: "/courses/ias",
             exams: ["UPSC Prelims", "UPSC Mains", "Interview"],
             duration: "12-18 Months",
-            price: "₹75,000",
+            price: "₹10,000",
             popular: true
         },
         {
@@ -47,7 +47,7 @@ const CourseLandingSection: React.FC = () => {
             link: "/courses/has-hpas",
             exams: ["HAS Prelims", "HAS Mains", "Interview"],
             duration: "10-12 Months",
-            price: "₹45,000",
+           price: "₹10,000",
             popular: true
         },
         {
@@ -57,7 +57,7 @@ const CourseLandingSection: React.FC = () => {
             link: "/courses/allied-services",
             exams: ["IFS", "IPS", "IRS", "Central Services"],
             duration: "12-15 Months",
-            price: "₹65,000"
+              price: "₹15,000"
         },
         {
             title: "Naib Tehsildar",
@@ -66,7 +66,7 @@ const CourseLandingSection: React.FC = () => {
             link: "/courses/naib-tehsildar",
             exams: ["Revenue Exam", "Land Records", "Court Procedures"],
             duration: "6-8 Months",
-            price: "₹25,000"
+              price: "₹15,000"
         },
         {
             title: "SSC Exams",
@@ -120,7 +120,7 @@ const CourseLandingSection: React.FC = () => {
             link: "/courses/tgt-pgt-jbt",
             exams: ["TGT", "PGT", "JBT", "KVS", "NVS"],
             duration: "6-8 Months",
-            price: "₹32,000"
+               price: "₹15,000"
         },
         {
             title: "Patwari / Police",

@@ -182,33 +182,80 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Auth user & get token
-// @route   POST /api/users/login
+// @desc    Resend OTP
+// @route   POST /api/users/resend-otp
 // @access  Public
-const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+const resendOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
 
-  const user = await User.findOne({ email });
+  // Check if there's an existing OTP request
+  const existingData = otpStore.get(email);
+  if (!existingData) {
+    res.status(400);
+    throw new Error('No OTP request found for this email');
+  }
 
-  if (user && (await user.matchPassword(password))) {
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+  // Generate new 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+  // Update OTP with new expiration
+  otpStore.set(email, {
+    otp,
+    expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+    name: existingData.name
+  });
+
+  // Email template
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'New Verification Code - Career Pathway',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #0B1F33 0%, #1E3A8A 100%); padding: 20px; text-align: center;">
+          <h1 style="color: #D4AF37; margin: 0;">Career Pathway</h1>
+        </div>
+        <div style="padding: 30px; background-color: #f9f9f9;">
+          <h2 style="color: #333;">New Verification Code</h2>
+          <p style="color: #666; font-size: 16px;">Here's your new verification code:</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 10px;">Your New Verification Code</h3>
+            <div style="font-size: 32px; font-weight: bold; color: #1E3A8A; letter-spacing: 5px; font-family: monospace;">
+              ${otp}
+            </div>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">This code will expire in 5 minutes</p>
+          </div>
+          
+          <p style="color: #666;">If you didn't request this verification, please ignore this email.</p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
+      message: 'New OTP sent successfully to your email',
+      email: email
+    });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    res.status(500);
+    throw new Error('Failed to send OTP email');
+  }
+});
+email: user.email,
+  phone: user.phone,
+    role: user.role,
       avatar: user.avatar,
-      emailVerified: user.emailVerified,
-      token: generateToken(user._id),
+        emailVerified: user.emailVerified,
+          token: generateToken(user._id),
     });
   } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
-  }
+  res.status(401);
+  throw new Error('Invalid email or password');
+}
 });
 
 // @desc    Get user profile

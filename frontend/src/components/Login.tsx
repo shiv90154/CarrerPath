@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -36,84 +38,141 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-[#F8FAFC] font-[Inter]">
-            <div className="w-full max-w-sm">
-                <form
-                    onSubmit={submitHandler}
-                    className="bg-white p-8 rounded-lg shadow-sm border border-[#E5E7EB]"
-                >
-                    <h1 className="text-2xl font-semibold mb-8 text-center text-[#0B1F33] font-[Poppins]">
-                        Institute Login
+        <div className="min-h-screen bg-gradient-to-br from-[#0B1F33] via-[#1E3A8A] to-[#0B1F33] flex items-center justify-center p-4">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,175,55,0.1)_0%,transparent_50%)]"></div>
+            </div>
+
+            <div className="relative w-full max-w-md">
+                {/* Logo/Brand Section */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#D4AF37] rounded-full mb-4">
+                        <User className="w-8 h-8 text-[#0B1F33]" />
+                    </div>
+                    <h1 className="text-3xl font-bold text-white font-poppins mb-2">
+                        Career Pathway
                     </h1>
+                    <p className="text-[#D4AF37] font-inter">
+                        Welcome back! Please sign in to continue
+                    </p>
+                </div>
 
-                    {error && (
-                        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
-                            {error}
+                {/* Login Form */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20">
+                    <form onSubmit={submitHandler} className="space-y-6">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center gap-2">
+                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Email Field */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-[#0B1F33] font-inter">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Mail className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent transition-all duration-200 font-inter"
+                                    placeholder="Enter your email"
+                                    required
+                                />
+                            </div>
                         </div>
-                    )}
 
-                    <div className="mb-6">
-                        <label
-                            className="block text-sm font-medium mb-2 text-[#0B1F33] font-[Inter]"
-                            htmlFor="email"
+                        {/* Password Field */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-[#0B1F33] font-inter">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent transition-all duration-200 font-inter"
+                                    placeholder="Enter your password"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                    ) : (
+                                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Login Button */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-[#1E3A8A] to-[#0B1F33] text-white font-semibold py-3 px-4 rounded-lg hover:from-[#0B1F33] hover:to-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 transition-all duration-200 font-inter disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
                         >
-                            Email Address
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            className="w-full px-4 py-3 border border-[#E5E7EB] rounded-md 
-                                     text-gray-900 placeholder:text-gray-400
-                                     focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent
-                                     transition-colors duration-200 font-[Inter]"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                            {loading ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    Signing In...
+                                </div>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </button>
+
+                        {/* Demo Credentials */}
+                        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                            <h4 className="text-sm font-medium text-gray-700 font-inter">Demo Credentials:</h4>
+                            <div className="text-xs text-gray-600 space-y-1 font-inter">
+                                <div className="flex justify-between">
+                                    <span>Student:</span>
+                                    <span>student@test.com / student123</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Admin:</span>
+                                    <span>admin@careerpathway.com / admin123</span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {/* Register Link */}
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-gray-600 font-inter">
+                            Don't have an account?{' '}
+                            <Link
+                                to="/register"
+                                className="font-medium text-[#1E3A8A] hover:text-[#D4AF37] transition-colors duration-200"
+                            >
+                                Create Account
+                            </Link>
+                        </p>
                     </div>
+                </div>
 
-                    <div className="mb-8">
-                        <label
-                            className="block text-sm font-medium mb-2 text-[#0B1F33] font-[Inter]"
-                            htmlFor="password"
-                        >
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="w-full px-4 py-3 border border-[#E5E7EB] rounded-md 
-                                     text-gray-900 placeholder:text-gray-400
-                                     focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent
-                                     transition-colors duration-200 font-[Inter]"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3 px-4 bg-[#1E3A8A] text-white font-medium rounded-md
-                                 hover:bg-[#0B1F33] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2
-                                 transition-colors duration-200 font-[Inter] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? 'Signing In...' : 'Sign In'}
-                    </button>
-
-                
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-600 font-[Inter]">
-                        Secure login for students & staff
+                {/* Footer */}
+                <div className="mt-8 text-center">
+                    <p className="text-sm text-white/70 font-inter">
+                        Secure login for students & administrators
                     </p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -33,6 +33,20 @@ const LiveTestSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    maxParticipants: {
+      type: Number,
+      default: 1000,
+    },
   },
   { timestamps: true }
 );
