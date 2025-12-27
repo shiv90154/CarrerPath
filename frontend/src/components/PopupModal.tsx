@@ -6,6 +6,7 @@ interface PopupModalProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  children?: React.ReactNode;
 }
 
 const PopupModal: React.FC<PopupModalProps> = ({

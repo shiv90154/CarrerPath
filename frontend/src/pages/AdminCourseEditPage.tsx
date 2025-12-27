@@ -75,9 +75,9 @@ const AdminCourseEditPage: React.FC = () => {
           setLevel(data.level || 'Beginner');
           setDuration(data.duration || '');
           setLanguage(data.language || 'English');
-          setTags(data.tags ? data.tags.join(', ') : '');
-          setRequirements(data.requirements ? data.requirements.join(', ') : '');
-          setWhatYouWillLearn(data.whatYouWillLearn ? data.whatYouWillLearn.join(', ') : '');
+          setTags(Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || ''));
+          setRequirements(Array.isArray(data.requirements) ? data.requirements.join(', ') : (data.requirements || ''));
+          setWhatYouWillLearn(Array.isArray(data.whatYouWillLearn) ? data.whatYouWillLearn.join(', ') : (data.whatYouWillLearn || ''));
           setVideos(data.videos.map(video => ({ ...video, videoFile: null })));
           setLoading(false);
         } catch (err) {
