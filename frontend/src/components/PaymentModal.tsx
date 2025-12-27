@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { buildApiUrl, API_ENDPOINTS } from '../config/api';
+import { buildApiUrl, API_ENDPOINTS, RAZORPAY_KEY_ID } from '../config/api';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -67,8 +67,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, product, o
 
             console.log('Order created successfully:', data);
 
-            // Get Razorpay key from environment or use test key
-            const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_id';
+            // Get Razorpay key from centralized config
+            const razorpayKey = RAZORPAY_KEY_ID;
 
             if (!razorpayKey || razorpayKey === 'rzp_test_your_key_id') {
                 throw new Error('Razorpay key not configured. Please contact administrator.');

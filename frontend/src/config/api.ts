@@ -1,5 +1,25 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const isDevelopment = import.meta.env.MODE === 'development' || import.meta.env.DEV;
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// Determine API URL with fallback logic
+export const API_BASE_URL = (() => {
+  // First try environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // If no env var, use smart detection
+  if (isDevelopment || isLocalhost) {
+    return 'http://localhost:5000';
+  }
+  
+  // Production fallback
+  return 'https://carrerpath-m48v.onrender.com';
+})();
+
+// Razorpay Key with fallback
+export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_fallback_key';
 
 // API Endpoints
 export const API_ENDPOINTS = {
