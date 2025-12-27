@@ -19,8 +19,7 @@ import {
   Check,
   X
 } from 'lucide-react';
-import ReactQuill from 'react-quill';
-// CSS will be handled by the component itself
+// Removed ReactQuill import
 
 interface CurrentAffair {
   _id: string;
@@ -164,9 +163,7 @@ const ManageCurrentAffairs: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEditorChange = (content: string) => {
-    setFormData(prev => ({ ...prev, detailedContent: content }));
-  };
+  // Removed handleEditorChange function - no longer needed
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -473,11 +470,13 @@ const ManageCurrentAffairs: React.FC = () => {
               <label className="block text-sm font-medium text-[#111827] mb-2 font-inter">
                 Detailed Content *
               </label>
-              <ReactQuill
+              <textarea
                 value={formData.detailedContent}
-                onChange={handleEditorChange}
-                theme="snow"
-                className="h-64 mb-12"
+                onChange={(e) => setFormData(prev => ({ ...prev, detailedContent: e.target.value }))}
+                rows={8}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-inter"
+                placeholder="Enter detailed content..."
+                required
               />
             </div>
 
