@@ -260,7 +260,6 @@ currentAffairSchema.index({ isPublished: 1, date: -1 });
 currentAffairSchema.index({ title: 'text', description: 'text', tags: 'text' });
 currentAffairSchema.index({ packages: 1, accessType: 1 });
 currentAffairSchema.index({ scheduledPublishDate: 1, isPublished: 1 });
-currentAffairSchema.index({ slug: 1 });
 currentAffairSchema.index({ language: 1, accessType: 1 });
 
 module.exports = mongoose.model('CurrentAffair', currentAffairSchema);

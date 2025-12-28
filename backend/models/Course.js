@@ -122,6 +122,12 @@ const CourseSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // SEO fields
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
   },
   {
     timestamps: true,
@@ -141,6 +147,16 @@ CourseSchema.virtual('discountPercentage').get(function () {
 // Update totalVideos when videos array changes
 CourseSchema.pre('save', function (next) {
   this.totalVideos = this.videos.length;
+
+  // Auto-generate slug if not provided
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100);
+  }
+
   next();
 });
 

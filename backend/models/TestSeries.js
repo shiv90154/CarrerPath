@@ -141,6 +141,12 @@ const TestSeriesSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // SEO fields
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     validityPeriod: {
       type: Number, // in days
       default: 365,
@@ -186,6 +192,16 @@ TestSeriesSchema.virtual('discountPercentage').get(function () {
 TestSeriesSchema.pre('save', function (next) {
   this.totalTests = this.tests.length;
   this.totalLiveTests = this.liveTests.length;
+
+  // Auto-generate slug if not provided
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100);
+  }
+
   next();
 });
 

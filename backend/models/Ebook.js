@@ -226,6 +226,12 @@ const EbookSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // SEO fields
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     // E-book specific features
     hasPreviewSample: {
       type: Boolean,
@@ -283,6 +289,16 @@ EbookSchema.pre('save', function (next) {
     });
   }
   this.totalBooks = totalBooks;
+
+  // Auto-generate slug if not provided
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100);
+  }
+
   next();
 });
 
