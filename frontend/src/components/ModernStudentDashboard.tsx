@@ -98,7 +98,7 @@ interface Stats {
     }>;
 }
 
-const StudentDashboard: React.FC = () => {
+const ModernStudentDashboard: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
@@ -1069,4 +1069,4 @@ const StudentDashboard: React.FC = () => {
     );
 };
 
-export default StudentDashboard;
+export default ModernStudentDashboard;

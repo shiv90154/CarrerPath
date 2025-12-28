@@ -62,7 +62,7 @@ interface NoticeStats {
     }>;
 }
 
-const AdminDashboard: React.FC = () => {
+const ModernAdminDashboard: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -306,8 +306,8 @@ const AdminDashboard: React.FC = () => {
                                 <Link
                                     to={item.path}
                                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeSection === item.id
-                                        ? 'bg-blue-100 text-blue-700'
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     onClick={() => setActiveSection(item.id)}
                                 >
@@ -625,4 +625,4 @@ const AdminDashboard: React.FC = () => {
     );
 };
 
-export default AdminDashboard;
+export default ModernAdminDashboard;
