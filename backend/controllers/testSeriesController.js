@@ -3,6 +3,7 @@ const TestSeries = require('../models/TestSeries');
 const Test = require('../models/Test');
 const Question = require('../models/Question');
 const Order = require('../models/Order');
+const emailNotifications = require('../middleware/emailNotifications');
 
 // @desc    Create a new test series
 // @route   POST /api/testseries/admin
@@ -66,6 +67,19 @@ const createTestSeries = asyncHandler(async (req, res) => {
   });
 
   const createdTestSeries = await testSeries.save();
+
+  // Send new test series notification to all users
+  try {
+    await emailNotifications.notifyNewTestSeries({
+      title: createdTestSeries.title,
+      testCount: createdTestSeries.tests?.length || 10,
+      duration: createdTestSeries.duration || 60
+    });
+  } catch (emailError) {
+    console.error('New test series notification error:', emailError);
+    // Don't fail test series creation if email fails
+  }
+
   res.status(201).json(createdTestSeries);
 });
 

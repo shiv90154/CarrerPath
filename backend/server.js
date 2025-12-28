@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 // Add after other routes
 const currentAffairRoutes = require('./routes/currentAffairRoutes');
+const emailRoutes = require('./routes/emailRoutes');
 
 const cors = require('cors');
 
@@ -54,6 +55,7 @@ app.use('/api/studymaterials', studyMaterialRoutes);
 app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/email', emailRoutes);
 
 // Error Handling Middleware
 app.use((req, res, next) => {

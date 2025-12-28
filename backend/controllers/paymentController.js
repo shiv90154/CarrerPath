@@ -8,6 +8,7 @@ const TestSeries = require('../models/TestSeries');
 const Ebook = require('../models/Ebook');
 const StudyMaterial = require('../models/StudyMaterial');
 const User = require('../models/User');
+const emailService = require('../utils/emailService');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -291,6 +292,34 @@ const verifyRazorpayPayment = asyncHandler(async (req, res) => {
       payment.status = 'paid';
       payment.paidAt = Date.now();
       await payment.save();
+
+      // Send payment confirmation email
+      try {
+        const user = await User.findById(order.user);
+        let productName = 'Product';
+
+        if (order.course) {
+          const course = await Course.findById(order.course);
+          productName = course?.title || 'Course';
+        } else if (order.testSeries) {
+          const testSeries = await TestSeries.findById(order.testSeries);
+          productName = testSeries?.title || 'Test Series';
+        } else if (order.ebook) {
+          const ebook = await Ebook.findById(order.ebook);
+          productName = ebook?.title || 'Ebook';
+        }
+
+        await emailService.sendPaymentConfirmation(
+          user.email,
+          user.name,
+          order.totalPrice,
+          productName,
+          razorpay_payment_id
+        );
+      } catch (emailError) {
+        console.error('Payment confirmation email error:', emailError);
+        // Don't fail payment if email fails
+      }
 
       res.json({ message: 'Payment successful', orderId: order._id });
     } else {

@@ -10,7 +10,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node seed/index.js",
     "db:reset": "node scripts/resetDatabase.js",
-    "db:seed": "node scripts/seedDatabase.js"
+    "db:seed": "node scripts/seedDatabase.js",
+    "email:setup": "node setup-email-system.js",
+    "email:test": "node test-email-system.js",
+    "email:config": "node test-email-config.js"
   },
   "keywords": [
     "mern",

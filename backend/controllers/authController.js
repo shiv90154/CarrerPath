@@ -3,6 +3,7 @@ const generateToken = require('../utils/generateToken');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const emailService = require('../utils/emailService');
 
 // Configure nodemailer
 const transporter = nodemailer.createTransport({
@@ -159,6 +160,15 @@ const verifyOTPAndRegister = asyncHandler(async (req, res) => {
   // Remove OTP from store
   otpStore.delete(email);
 
+  // Send welcome email
+  try {
+    await emailService.sendWelcomeEmail(user.email, user.name);
+    await emailService.sendAdminNewUserNotification(user.name, user.email, new Date().toLocaleDateString());
+  } catch (emailError) {
+    console.error('Welcome email error:', emailError);
+    // Don't fail registration if email fails
+  }
+
   if (user) {
     res.status(201).json({
       _id: user._id,
@@ -197,6 +207,15 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
+    // Send welcome email
+    try {
+      await emailService.sendWelcomeEmail(user.email, user.name);
+      await emailService.sendAdminNewUserNotification(user.name, user.email, new Date().toLocaleDateString());
+    } catch (emailError) {
+      console.error('Welcome email error:', emailError);
+      // Don't fail registration if email fails
+    }
+
     res.status(201).json({
       _id: user._id,
       name: user.name,

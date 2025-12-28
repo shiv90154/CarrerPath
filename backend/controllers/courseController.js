@@ -6,6 +6,7 @@ const Video = require("../models/Video");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const cloudinary = require("../utils/cloudinary");
+const emailNotifications = require("../middleware/emailNotifications");
 
 /* =========================================================
    @desc    Create a new course
@@ -59,6 +60,19 @@ const createCourse = asyncHandler(async (req, res) => {
   });
 
   const createdCourse = await course.save();
+
+  // Send new course notification to all users
+  try {
+    await emailNotifications.notifyNewCourse({
+      title: createdCourse.title,
+      description: createdCourse.description,
+      instructor: createdCourse.instructor || 'Career Pathway Institute'
+    });
+  } catch (emailError) {
+    console.error('New course notification error:', emailError);
+    // Don't fail course creation if email fails
+  }
+
   res.status(201).json(createdCourse);
 });
 
