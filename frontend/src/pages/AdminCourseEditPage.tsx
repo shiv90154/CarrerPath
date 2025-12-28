@@ -517,142 +517,203 @@ const AdminCourseEditPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                  <p className="text-gray-400 text-sm">Click "Add Category" to start building your course structure</p>
-                </div>
-          ) : (
-          <div className="space-y-6">
-            {content.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="border border-gray-300 rounded-lg overflow-hidden">
-                {/* Category Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-800 flex items-center">
-                      <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                        {categoryIndex + 1}
-                      </span>
-                      Category {categoryIndex + 1}
-                    </h3>
-                    <button
-                      onClick={() => removeCategory(categoryIndex)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    >
-                      Remove Category
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Category Name</label>
-                      <input
-                        type="text"
-                        value={category.categoryName}
-                        onChange={(e) => updateCategory(categoryIndex, 'categoryName', e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="e.g., General Studies, Himachal GK"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Category Description</label>
-                      <input
-                        type="text"
-                        value={category.categoryDescription}
-                        onChange={(e) => updateCategory(categoryIndex, 'categoryDescription', e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Brief description of this category"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category Content */}
-                <div className="p-4">
-                  {/* Subcategories Section */}
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-md font-semibold text-gray-700">Subcategories</h4>
-                      <button
-                        onClick={() => addSubcategory(categoryIndex)}
-                        className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm"
-                      >
-                        + Add Subcategory
-                      </button>
-                    </div>
-
-                    {category.subcategories.map((subcategory, subcategoryIndex) => (
-                      <div key={subcategoryIndex} className="border border-gray-200 rounded-lg p-4 mb-4 ml-4">
-                        <div className="flex justify-between items-center mb-3">
-                          <h5 className="font-medium text-gray-600 flex items-center">
-                            <span className="text-purple-600 mr-2">👉</span>
-                            Subcategory {subcategoryIndex + 1}
-                          </h5>
+              ) : (
+                <div className="space-y-6">
+                  {content.map((category, categoryIndex) => (
+                    <div key={categoryIndex} className="border border-gray-300 rounded-lg overflow-hidden">
+                      {/* Category Header */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                              {categoryIndex + 1}
+                            </span>
+                            Category {categoryIndex + 1}
+                          </h3>
                           <button
-                            onClick={() => removeSubcategory(categoryIndex, subcategoryIndex)}
-                            className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
+                            onClick={() => removeCategory(categoryIndex)}
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
                           >
-                            Remove
+                            Remove Category
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-gray-600 text-sm font-bold mb-1">Subcategory Name</label>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Category Name</label>
                             <input
                               type="text"
-                              value={subcategory.subcategoryName}
-                              onChange={(e) => updateSubcategory(categoryIndex, subcategoryIndex, 'subcategoryName', e.target.value)}
+                              value={category.categoryName}
+                              onChange={(e) => updateCategory(categoryIndex, 'categoryName', e.target.value)}
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                              placeholder="e.g., History, Geography"
+                              placeholder="e.g., General Studies, Himachal GK"
                             />
                           </div>
                           <div>
-                            <label className="block text-gray-600 text-sm font-bold mb-1">Subcategory Description</label>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Category Description</label>
                             <input
                               type="text"
-                              value={subcategory.subcategoryDescription}
-                              onChange={(e) => updateSubcategory(categoryIndex, subcategoryIndex, 'subcategoryDescription', e.target.value)}
+                              value={category.categoryDescription}
+                              onChange={(e) => updateCategory(categoryIndex, 'categoryDescription', e.target.value)}
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                              placeholder="Brief description"
+                              placeholder="Brief description of this category"
                             />
                           </div>
                         </div>
+                      </div>
 
-                        {/* Videos in Subcategory */}
-                        <div className="ml-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h6 className="text-sm font-medium text-gray-600">Videos in this Subcategory</h6>
+                      {/* Category Content */}
+                      <div className="p-4">
+                        {/* Subcategories Section */}
+                        <div className="mb-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-md font-semibold text-gray-700">Subcategories</h4>
+                            <button
+                              onClick={() => addSubcategory(categoryIndex)}
+                              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm"
+                            >
+                              + Add Subcategory
+                            </button>
+                          </div>
+
+                          {category.subcategories.map((subcategory, subcategoryIndex) => (
+                            <div key={subcategoryIndex} className="border border-gray-200 rounded-lg p-4 mb-4 ml-4">
+                              <div className="flex justify-between items-center mb-3">
+                                <h5 className="font-medium text-gray-600 flex items-center">
+                                  <span className="text-purple-600 mr-2">👉</span>
+                                  Subcategory {subcategoryIndex + 1}
+                                </h5>
+                                <button
+                                  onClick={() => removeSubcategory(categoryIndex, subcategoryIndex)}
+                                  className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                                <div>
+                                  <label className="block text-gray-600 text-sm font-bold mb-1">Subcategory Name</label>
+                                  <input
+                                    type="text"
+                                    value={subcategory.subcategoryName}
+                                    onChange={(e) => updateSubcategory(categoryIndex, subcategoryIndex, 'subcategoryName', e.target.value)}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    placeholder="e.g., History, Geography"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-gray-600 text-sm font-bold mb-1">Subcategory Description</label>
+                                  <input
+                                    type="text"
+                                    value={subcategory.subcategoryDescription}
+                                    onChange={(e) => updateSubcategory(categoryIndex, subcategoryIndex, 'subcategoryDescription', e.target.value)}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    placeholder="Brief description"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Videos in Subcategory */}
+                              <div className="ml-4">
+                                <div className="flex justify-between items-center mb-2">
+                                  <h6 className="text-sm font-medium text-gray-600">Videos in this Subcategory</h6>
+                                  <button
+                                    type="button"
+                                    onClick={() => openVideoModal(categoryIndex, subcategoryIndex)}
+                                    className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs"
+                                  >
+                                    + Upload Video
+                                  </button>
+                                </div>
+
+                                {subcategory.videos.map((video, videoIndex) => (
+                                  <div key={videoIndex} className="border border-gray-100 rounded p-3 mb-2 bg-gray-50">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-xs font-medium text-gray-500">Video {videoIndex + 1}</span>
+                                      <button
+                                        onClick={() => removeSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex)}
+                                        className="bg-red-300 hover:bg-red-500 text-white font-bold py-1 px-2 rounded text-xs"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                                      <input
+                                        type="text"
+                                        value={video.title}
+                                        onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'title', e.target.value)}
+                                        className="shadow appearance-none border rounded w-full py-1 px-2 text-gray-700 text-sm leading-tight focus:outline-none focus:shadow-outline"
+                                        placeholder="Video title"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={video.description}
+                                        onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'description', e.target.value)}
+                                        className="shadow appearance-none border rounded w-full py-1 px-2 text-gray-700 text-sm leading-tight focus:outline-none focus:shadow-outline"
+                                        placeholder="Video description"
+                                      />
+                                    </div>
+                                    <div className="flex items-center space-x-4">
+                                      <label className="inline-flex items-center">
+                                        <input
+                                          type="checkbox"
+                                          checked={video.isFree}
+                                          onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'isFree', e.target.checked)}
+                                          className="form-checkbox h-4 w-4 text-blue-600"
+                                        />
+                                        <span className="ml-2 text-sm text-gray-700">Free Sample</span>
+                                      </label>
+                                      <input
+                                        type="file"
+                                        onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
+                                        className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Direct Videos in Category */}
+                        <div>
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-md font-semibold text-gray-700">Direct Videos (No Subcategory)</h4>
                             <button
                               type="button"
-                              onClick={() => openVideoModal(categoryIndex, subcategoryIndex)}
-                              className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs"
+                              onClick={() => openVideoModal(categoryIndex)}
+                              className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded text-sm"
                             >
                               + Upload Video
                             </button>
                           </div>
 
-                          {subcategory.videos.map((video, videoIndex) => (
-                            <div key={videoIndex} className="border border-gray-100 rounded p-3 mb-2 bg-gray-50">
+                          {category.videos.map((video, videoIndex) => (
+                            <div key={videoIndex} className="border border-gray-200 rounded p-3 mb-3 bg-orange-50">
                               <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-medium text-gray-500">Video {videoIndex + 1}</span>
+                                <span className="text-sm font-medium text-gray-600">Direct Video {videoIndex + 1}</span>
                                 <button
-                                  onClick={() => removeSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex)}
-                                  className="bg-red-300 hover:bg-red-500 text-white font-bold py-1 px-2 rounded text-xs"
+                                  onClick={() => removeCategoryVideo(categoryIndex, videoIndex)}
+                                  className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
                                 >
                                   Remove
                                 </button>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                 <input
                                   type="text"
                                   value={video.title}
-                                  onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'title', e.target.value)}
-                                  className="shadow appearance-none border rounded w-full py-1 px-2 text-gray-700 text-sm leading-tight focus:outline-none focus:shadow-outline"
+                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'title', e.target.value)}
+                                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                   placeholder="Video title"
                                 />
                                 <input
                                   type="text"
                                   value={video.description}
-                                  onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'description', e.target.value)}
-                                  className="shadow appearance-none border rounded w-full py-1 px-2 text-gray-700 text-sm leading-tight focus:outline-none focus:shadow-outline"
+                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'description', e.target.value)}
+                                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                   placeholder="Video description"
                                 />
                               </div>
@@ -661,149 +722,86 @@ const AdminCourseEditPage: React.FC = () => {
                                   <input
                                     type="checkbox"
                                     checked={video.isFree}
-                                    onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'isFree', e.target.checked)}
+                                    onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'isFree', e.target.checked)}
                                     className="form-checkbox h-4 w-4 text-blue-600"
                                   />
                                   <span className="ml-2 text-sm text-gray-700">Free Sample</span>
                                 </label>
                                 <input
                                   type="file"
-                                  onChange={(e) => updateSubcategoryVideo(categoryIndex, subcategoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
-                                  className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
+                                  className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                                 />
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Direct Videos in Category */}
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-md font-semibold text-gray-700">Direct Videos (No Subcategory)</h4>
-                      <button
-                        type="button"
-                        onClick={() => openVideoModal(categoryIndex)}
-                        className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded text-sm"
-                      >
-                        + Upload Video
-                      </button>
                     </div>
-
-                    {category.videos.map((video, videoIndex) => (
-                      <div key={videoIndex} className="border border-gray-200 rounded p-3 mb-3 bg-orange-50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-gray-600">Direct Video {videoIndex + 1}</span>
-                          <button
-                            onClick={() => removeCategoryVideo(categoryIndex, videoIndex)}
-                            className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                          <input
-                            type="text"
-                            value={video.title}
-                            onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'title', e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            placeholder="Video title"
-                          />
-                          <input
-                            type="text"
-                            value={video.description}
-                            onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'description', e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            placeholder="Video description"
-                          />
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <label className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={video.isFree}
-                              onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'isFree', e.target.checked)}
-                              className="form-checkbox h-4 w-4 text-blue-600"
-                            />
-                            <span className="ml-2 text-sm text-gray-700">Free Sample</span>
-                          </label>
-                          <input
-                            type="file"
-                            onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
-                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
               )}
 
-          <div className="flex justify-end mt-6 space-x-4">
-            <button type="button" onClick={() => navigate('/admin/courses')} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-              Cancel
-            </button>
-            <button onClick={submitHandler} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={uploadingVideo}>
-              {id ? 'Update Course Structure' : 'Save Course Structure'}
-            </button>
-          </div>
-        </div>
+              <div className="flex justify-end mt-6 space-x-4">
+                <button type="button" onClick={() => navigate('/admin/courses')} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                  Cancel
+                </button>
+                <button onClick={submitHandler} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={uploadingVideo}>
+                  {id ? 'Update Course Structure' : 'Save Course Structure'}
+                </button>
+              </div>
+            </div>
           )}
+        </div>
       </div>
-    </div>
 
-      {/* Legacy Video Management (for backward compatibility) */ }
-  {
-    id && videos.length > 0 && (
-      <div className="bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-3xl font-bold mb-4">Legacy Videos (Backward Compatibility)</h2>
-        <p className="text-gray-600 mb-4">These are videos from the old structure. Consider organizing them into the new hierarchical structure above.</p>
-        {videos.map((video, index) => (
-          <div key={index} className="border p-4 rounded-md mb-4 bg-gray-50">
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Video Title</label>
-              <input type="text" value={video.title} onChange={(e) => handleVideoChange(index, 'title', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Video Description</label>
-              <textarea value={video.description} onChange={(e) => handleVideoChange(index, 'description', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows={3}></textarea>
-            </div>
-            <div className="mb-4">
-              <label className="inline-flex items-center">
-                <input type="checkbox" checked={video.isFree} onChange={(e) => handleVideoChange(index, 'isFree', e.target.checked)} className="form-checkbox" />
-                <span className="ml-2 text-gray-700">Is Free Sample?</span>
-              </label>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Upload Video File</label>
-              <input type="file" onChange={(e) => handleVideoChange(index, 'videoFile', e.target.files ? e.target.files[0] : null)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-            </div>
-            <button type="button" onClick={() => handleVideoUpload(id, video)} className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={uploadingVideo}>
-              {uploadingVideo ? 'Uploading...' : 'Upload Video'}
+      {/* Legacy Video Management (for backward compatibility) */}
+      {
+        id && videos.length > 0 && (
+          <div className="bg-white shadow-lg rounded-lg p-8">
+            <h2 className="text-3xl font-bold mb-4">Legacy Videos (Backward Compatibility)</h2>
+            <p className="text-gray-600 mb-4">These are videos from the old structure. Consider organizing them into the new hierarchical structure above.</p>
+            {videos.map((video, index) => (
+              <div key={index} className="border p-4 rounded-md mb-4 bg-gray-50">
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Video Title</label>
+                  <input type="text" value={video.title} onChange={(e) => handleVideoChange(index, 'title', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Video Description</label>
+                  <textarea value={video.description} onChange={(e) => handleVideoChange(index, 'description', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows={3}></textarea>
+                </div>
+                <div className="mb-4">
+                  <label className="inline-flex items-center">
+                    <input type="checkbox" checked={video.isFree} onChange={(e) => handleVideoChange(index, 'isFree', e.target.checked)} className="form-checkbox" />
+                    <span className="ml-2 text-gray-700">Is Free Sample?</span>
+                  </label>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Upload Video File</label>
+                  <input type="file" onChange={(e) => handleVideoChange(index, 'videoFile', e.target.files ? e.target.files[0] : null)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                </div>
+                <button type="button" onClick={() => handleVideoUpload(id, video)} className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={uploadingVideo}>
+                  {uploadingVideo ? 'Uploading...' : 'Upload Video'}
+                </button>
+              </div>
+            ))}
+            <button type="button" onClick={handleAddVideoField} className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
+              Add New Video Field
             </button>
           </div>
-        ))}
-        <button type="button" onClick={handleAddVideoField} className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
-          Add New Video Field
-        </button>
-      </div>
-    )
-  }
+        )
+      }
 
-  {/* Video Upload Modal */ }
-  <VideoUploadModal
-    isOpen={showVideoModal}
-    onClose={() => setShowVideoModal(false)}
-    courseId={id || ''}
-    categoryIndex={videoModalContext.categoryIndex}
-    subcategoryIndex={videoModalContext.subcategoryIndex}
-    onUploadSuccess={handleVideoUploadSuccess}
-  />
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        courseId={id || ''}
+        categoryIndex={videoModalContext.categoryIndex}
+        subcategoryIndex={videoModalContext.subcategoryIndex}
+        onUploadSuccess={handleVideoUploadSuccess}
+      />
     </div >
   );
 };
