@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiClient, API_ENDPOINTS } from '../config/api';
 import {
     BookOpen, TestTube, BookOpenCheck, FileText, Trophy,
     CreditCard, User, Menu, X, Home, Search, Bell, Settings,
@@ -131,12 +131,6 @@ const StudentDashboard: React.FC = () => {
                 return;
             }
 
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                },
-            };
-
             try {
                 const [
                     coursesResponse,
@@ -147,13 +141,13 @@ const StudentDashboard: React.FC = () => {
                     paymentsResponse,
                     statsResponse
                 ] = await Promise.all([
-                    axios.get<Course[]>('https://carrerpath-m48v.onrender.com/api/student/courses', config),
-                    axios.get<TestSeries[]>('https://carrerpath-m48v.onrender.com/api/student/testseries', config),
-                    axios.get<Ebook[]>('https://carrerpath-m48v.onrender.com/api/student/ebooks', config),
-                    axios.get<StudyMaterial[]>('https://carrerpath-m48v.onrender.com/api/student/studymaterials', config),
-                    axios.get<Result[]>('https://carrerpath-m48v.onrender.com/api/student/results', config),
-                    axios.get<Payment[]>('https://carrerpath-m48v.onrender.com/api/student/payments', config),
-                    axios.get<Stats>('https://carrerpath-m48v.onrender.com/api/student/stats', config)
+                    apiClient.get<Course[]>(API_ENDPOINTS.STUDENT_COURSES),
+                    apiClient.get<TestSeries[]>(API_ENDPOINTS.STUDENT_TESTSERIES),
+                    apiClient.get<Ebook[]>(API_ENDPOINTS.STUDENT_EBOOKS),
+                    apiClient.get<StudyMaterial[]>(API_ENDPOINTS.STUDENT_STUDYMATERIALS),
+                    apiClient.get<Result[]>(API_ENDPOINTS.STUDENT_RESULTS),
+                    apiClient.get<Payment[]>(API_ENDPOINTS.STUDENT_PAYMENTS),
+                    apiClient.get<Stats>(API_ENDPOINTS.STUDENT_STATS)
                 ]);
 
                 setPurchasedCourses(coursesResponse.data);
@@ -165,9 +159,9 @@ const StudentDashboard: React.FC = () => {
                 setStats(statsResponse.data);
 
                 setLoading(false);
-            } catch (err) {
-                console.error(err);
-                setError('Failed to fetch dashboard data');
+            } catch (err: any) {
+                console.error('Dashboard data fetch error:', err);
+                setError(err.response?.data?.message || 'Failed to fetch dashboard data');
                 setLoading(false);
             }
         };
@@ -224,13 +218,80 @@ const StudentDashboard: React.FC = () => {
         );
     }
 
+    const retryFetch = () => {
+        setError(null);
+        setLoading(true);
+        // Re-trigger the useEffect by updating a dependency
+        const fetchData = async () => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const [
+                    coursesResponse,
+                    testSeriesResponse,
+                    ebooksResponse,
+                    studyMaterialsResponse,
+                    resultsResponse,
+                    paymentsResponse,
+                    statsResponse
+                ] = await Promise.all([
+                    apiClient.get<Course[]>(API_ENDPOINTS.STUDENT_COURSES),
+                    apiClient.get<TestSeries[]>(API_ENDPOINTS.STUDENT_TESTSERIES),
+                    apiClient.get<Ebook[]>(API_ENDPOINTS.STUDENT_EBOOKS),
+                    apiClient.get<StudyMaterial[]>(API_ENDPOINTS.STUDENT_STUDYMATERIALS),
+                    apiClient.get<Result[]>(API_ENDPOINTS.STUDENT_RESULTS),
+                    apiClient.get<Payment[]>(API_ENDPOINTS.STUDENT_PAYMENTS),
+                    apiClient.get<Stats>(API_ENDPOINTS.STUDENT_STATS)
+                ]);
+
+                setPurchasedCourses(coursesResponse.data);
+                setPurchasedTestSeries(testSeriesResponse.data);
+                setPurchasedEbooks(ebooksResponse.data);
+                setPurchasedStudyMaterials(studyMaterialsResponse.data);
+                setTestResults(resultsResponse.data);
+                setPaymentHistory(paymentsResponse.data);
+                setStats(statsResponse.data);
+
+                setLoading(false);
+            } catch (err: any) {
+                console.error('Dashboard data fetch error:', err);
+                setError(err.response?.data?.message || 'Failed to fetch dashboard data');
+                setLoading(false);
+            }
+        };
+        fetchData();
+    };
+
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center max-w-md mx-auto p-6">
                     <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
-                    <p className="text-gray-600">{error}</p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Error</h2>
+                    <p className="text-gray-600 mb-6">{error}</p>
+                    <div className="space-y-3">
+                        <button
+                            onClick={retryFetch}
+                            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Retry Loading
+                        </button>
+                        <Link
+                            to="/dashboard-test"
+                            className="block w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors text-center"
+                        >
+                            Run Diagnostics
+                        </Link>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                            Logout & Login Again
+                        </button>
+                    </div>
                 </div>
             </div>
         );

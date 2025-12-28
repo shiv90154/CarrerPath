@@ -69,6 +69,16 @@ export const API_ENDPOINTS = {
   // Contact
   CONTACT_SEND: '/api/contact/send-message',
 
+  // Student Dashboard
+  STUDENT_COURSES: '/api/student/courses',
+  STUDENT_TESTSERIES: '/api/student/testseries',
+  STUDENT_EBOOKS: '/api/student/ebooks',
+  STUDENT_STUDYMATERIALS: '/api/student/studymaterials',
+  STUDENT_RESULTS: '/api/student/results',
+  STUDENT_PAYMENTS: '/api/student/payments',
+  STUDENT_STATS: '/api/student/stats',
+  STUDENT_PROGRESS: (courseId: string) => `/api/student/progress/${courseId}`,
+
   // Notices
   NOTICES: '/api/notices',
   NOTICES_ADMIN: '/api/notices/admin/all',
@@ -94,10 +104,25 @@ export const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
+    // Try to get token from userInfo first (AuthContext format)
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo);
+        if (user.token) {
+          config.headers.Authorization = `Bearer ${user.token}`;
+        }
+      } catch (e) {
+        console.error('Error parsing userInfo:', e);
+      }
+    }
+    
+    // Fallback to direct token storage
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => {
@@ -111,6 +136,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized access
+      localStorage.removeItem('userInfo');
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

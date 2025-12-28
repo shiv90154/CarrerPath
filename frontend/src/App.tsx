@@ -65,6 +65,8 @@ import RefundPolicy from "./components/RefundPolicy";
 // Add this import
 import NotFoundPage from './components/NotFoundPage';
 import ManageCurrentAffairs from './pages/ManageCurrentAffairs';
+import RegistrationTest from './components/RegistrationTest';
+import StudentDashboardTest from './components/StudentDashboardTest';
 function App() {
   return (
     <div className="App">
@@ -122,6 +124,8 @@ function App() {
         <Route path="/admin/current-affairs" element={<ManageCurrentAffairs />} />
         <Route path="/admin/notices" element={<AdminNoticeListPage />} />
         <Route path="/admin/notices/new" element={<AdminNoticeCreatePage />} />
+        <Route path="/registration-test" element={<RegistrationTest />} />
+        <Route path="/dashboard-test" element={<StudentDashboardTest />} />
         <Route path="/study-materials/:id" element={<StudyMaterialDetailPage />} />
 
         {/* Course Landing Pages */}
