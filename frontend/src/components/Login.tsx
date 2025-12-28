@@ -135,20 +135,7 @@ const Login: React.FC = () => {
                             )}
                         </button>
 
-                        {/* Demo Credentials */}
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                            <h4 className="text-sm font-medium text-gray-700 font-inter">Demo Credentials:</h4>
-                            <div className="text-xs text-gray-600 space-y-1 font-inter">
-                                <div className="flex justify-between">
-                                    <span>Student:</span>
-                                    <span>student@test.com / student123</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Admin:</span>
-                                    <span>admin@careerpathway.com / admin123</span>
-                                </div>
-                            </div>
-                        </div>
+
                     </form>
 
                     {/* Register Link */}

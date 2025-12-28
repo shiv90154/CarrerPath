@@ -235,13 +235,15 @@ const getAllEbooksPublic = asyncHandler(async (req, res) => {
     .sort({ isFeatured: -1, createdAt: -1 }); // Featured first, then newest
 
   // Add virtual fields to response
-  const ebooksWithVirtuals = ebooks.map(ebook => {
-    const ebookObj = ebook.toObject();
-    return {
-      ...ebookObj,
-      discountPercentage: ebook.discountPercentage
-    };
-  });
+  const ebooksWithVirtuals = ebooks
+    .filter(ebook => ebook) // Filter out null ebooks
+    .map(ebook => {
+      const ebookObj = ebook.toObject();
+      return {
+        ...ebookObj,
+        discountPercentage: ebook.discountPercentage
+      };
+    });
 
   res.json(ebooksWithVirtuals);
 });
@@ -314,45 +316,61 @@ const getEbookByIdPublic = asyncHandler(async (req, res) => {
   if (ebook.content && ebook.content.length > 0) {
     if (userHasPurchased || ebook.isFree) {
       // Full access - include all books with download URLs
-      responseData.content = ebook.content.map(category => ({
-        ...category.toObject(),
-        subcategories: category.subcategories.map(subcategory => ({
-          ...subcategory.toObject(),
-          books: subcategory.books.map(book => ({
-            ...book.toObject(),
-            downloadUrl: book.fileUrl,
-            canDownload: true
-          }))
-        })),
-        books: category.books.map(book => ({
-          ...book.toObject(),
-          downloadUrl: book.fileUrl,
-          canDownload: true
-        }))
-      }));
+      responseData.content = ebook.content
+        .filter(category => category) // Filter out null categories
+        .map(category => ({
+          ...category.toObject(),
+          subcategories: category.subcategories
+            .filter(subcategory => subcategory) // Filter out null subcategories
+            .map(subcategory => ({
+              ...subcategory.toObject(),
+              books: subcategory.books
+                .filter(book => book) // Filter out null books
+                .map(book => ({
+                  ...book.toObject(),
+                  downloadUrl: book.fileUrl,
+                  canDownload: true
+                }))
+            })),
+          books: category.books
+            .filter(book => book) // Filter out null books
+            .map(book => ({
+              ...book.toObject(),
+              downloadUrl: book.fileUrl,
+              canDownload: true
+            }))
+        }));
       responseData.accessType = 'full';
     } else {
       // Limited access - show preview samples only
-      const filteredContent = ebook.content.map(category => ({
-        ...category.toObject(),
-        subcategories: category.subcategories.map(subcategory => ({
-          ...subcategory.toObject(),
-          books: subcategory.books.map(book => ({
-            ...book.toObject(),
-            downloadUrl: book.isFree ? book.fileUrl : null,
-            previewUrl: book.hasPreview ? book.previewUrl : null,
-            canDownload: book.isFree,
-            isPreviewOnly: !book.isFree
-          }))
-        })),
-        books: category.books.map(book => ({
-          ...book.toObject(),
-          downloadUrl: book.isFree ? book.fileUrl : null,
-          previewUrl: book.hasPreview ? book.previewUrl : null,
-          canDownload: book.isFree,
-          isPreviewOnly: !book.isFree
-        }))
-      }));
+      const filteredContent = ebook.content
+        .filter(category => category) // Filter out null categories
+        .map(category => ({
+          ...category.toObject(),
+          subcategories: category.subcategories
+            .filter(subcategory => subcategory) // Filter out null subcategories
+            .map(subcategory => ({
+              ...subcategory.toObject(),
+              books: subcategory.books
+                .filter(book => book) // Filter out null books
+                .map(book => ({
+                  ...book.toObject(),
+                  downloadUrl: book.isFree ? book.fileUrl : null,
+                  previewUrl: book.hasPreview ? book.previewUrl : null,
+                  canDownload: book.isFree,
+                  isPreviewOnly: !book.isFree
+                }))
+            })),
+          books: category.books
+            .filter(book => book) // Filter out null books
+            .map(book => ({
+              ...book.toObject(),
+              downloadUrl: book.isFree ? book.fileUrl : null,
+              previewUrl: book.hasPreview ? book.previewUrl : null,
+              canDownload: book.isFree,
+              isPreviewOnly: !book.isFree
+            }))
+        }));
 
       responseData.content = filteredContent;
       responseData.accessType = 'limited';

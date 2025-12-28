@@ -75,7 +75,21 @@ const AdminNoticeListPage: React.FC = () => {
     }, [currentPage, searchTerm, filters]);
 
     const fetchNotices = async () => {
-        if (!user?.token) return;
+        if (!user?.token) {
+            console.log('❌ No user token available for notices');
+            setError('Authentication required');
+            setLoading(false);
+            return;
+        }
+
+        console.log('🔍 Fetching notices with params:', {
+            page: currentPage,
+            limit: 10,
+            search: searchTerm,
+            filters,
+            userRole: user.role,
+            hasToken: !!user.token
+        });
 
         try {
             setLoading(true);
@@ -86,38 +100,75 @@ const AdminNoticeListPage: React.FC = () => {
                 ...filters
             });
 
+            console.log('📡 Making API call to:', `https://carrerpath-m48v.onrender.com/api/notices/admin/all?${params}`);
+
             const { data } = await axios.get<NoticesResponse>(
                 `https://carrerpath-m48v.onrender.com/api/notices/admin/all?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
+            console.log('✅ Notices API response:', {
+                success: data.success,
+                noticeCount: data.data?.length || 0,
+                totalPages: data.pagination?.pages || 0,
+                total: data.pagination?.total || 0
+            });
+
             if (data.success) {
-                setNotices(data.data);
-                setTotalPages(data.pagination.pages);
+                setNotices(data.data || []);
+                setTotalPages(data.pagination?.pages || 1);
+            } else {
+                console.log('❌ API returned success: false');
+                setError('Failed to fetch notices - API returned error');
             }
             setError(null);
         } catch (err: any) {
-            console.error('Error fetching notices:', err);
-            setError('Failed to fetch notices');
+            console.error('❌ Error fetching notices:', {
+                message: err.message,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data,
+                config: {
+                    url: err.config?.url,
+                    method: err.config?.method,
+                    headers: err.config?.headers
+                }
+            });
+            setError(`Failed to fetch notices: ${err.response?.data?.message || err.message}`);
         } finally {
             setLoading(false);
         }
     };
 
     const fetchStats = async () => {
-        if (!user?.token) return;
+        if (!user?.token) {
+            console.log('❌ No user token available for stats');
+            return;
+        }
 
         try {
+            console.log('📊 Fetching notice statistics...');
             const { data } = await axios.get(
                 'https://carrerpath-m48v.onrender.com/api/notices/admin/stats',
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
+            console.log('✅ Stats API response:', {
+                success: data.success,
+                stats: data.data
+            });
+
             if (data.success) {
                 setStats(data.data);
+            } else {
+                console.log('❌ Stats API returned success: false');
             }
-        } catch (err) {
-            console.error('Error fetching stats:', err);
+        } catch (err: any) {
+            console.error('❌ Error fetching stats:', {
+                message: err.message,
+                status: err.response?.status,
+                data: err.response?.data
+            });
         }
     };
 
@@ -533,8 +584,8 @@ const AdminNoticeListPage: React.FC = () => {
                                                             key={page}
                                                             onClick={() => setCurrentPage(page)}
                                                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
-                                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                                 }`}
                                                         >
                                                             {page}

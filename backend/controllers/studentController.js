@@ -24,11 +24,13 @@ const getStudentCourses = asyncHandler(async (req, res) => {
     }
   });
 
-  const courses = orders.map(order => ({
-    ...order.course.toObject(),
-    purchaseDate: order.createdAt,
-    orderId: order._id
-  }));
+  const courses = orders
+    .filter(order => order.course) // Filter out orders without course
+    .map(order => ({
+      ...order.course.toObject(),
+      purchaseDate: order.createdAt,
+      orderId: order._id
+    }));
 
   res.json(courses);
 });
@@ -49,11 +51,13 @@ const getStudentTestSeries = asyncHandler(async (req, res) => {
     }
   });
 
-  const testSeries = orders.map(order => ({
-    ...order.testSeries.toObject(),
-    purchaseDate: order.createdAt,
-    orderId: order._id
-  }));
+  const testSeries = orders
+    .filter(order => order.testSeries) // Filter out orders without testSeries
+    .map(order => ({
+      ...order.testSeries.toObject(),
+      purchaseDate: order.createdAt,
+      orderId: order._id
+    }));
 
   res.json(testSeries);
 });
@@ -84,23 +88,27 @@ const getStudentStudyMaterials = asyncHandler(async (req, res) => {
   // Combine paid materials from orders
   const paidMaterials = [];
   orders.forEach(order => {
-    order.items.forEach(item => {
-      if (item.material) {
-        paidMaterials.push({
-          ...item.material.toObject(),
-          purchaseDate: order.createdAt,
-          orderId: order._id
-        });
-      }
-    });
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        if (item.material) {
+          paidMaterials.push({
+            ...item.material.toObject(),
+            purchaseDate: order.createdAt,
+            orderId: order._id
+          });
+        }
+      });
+    }
   });
 
   // Add free materials (simulate purchase date as first access)
-  const freeMaterials = freeStudyMaterials.map(material => ({
-    ...material.toObject(),
-    purchaseDate: material.createdAt, // Use creation date as "purchase" date for free materials
-    orderId: null
-  }));
+  const freeMaterials = freeStudyMaterials
+    .filter(material => material) // Filter out null materials
+    .map(material => ({
+      ...material.toObject(),
+      purchaseDate: material.createdAt, // Use creation date as "purchase" date for free materials
+      orderId: null
+    }));
 
   // Combine and sort by purchase date
   const allMaterials = [...paidMaterials, ...freeMaterials].sort(
@@ -126,11 +134,13 @@ const getStudentEbooks = asyncHandler(async (req, res) => {
     }
   });
 
-  const ebooks = orders.map(order => ({
-    ...order.ebook.toObject(),
-    purchaseDate: order.createdAt,
-    orderId: order._id
-  }));
+  const ebooks = orders
+    .filter(order => order.ebook) // Filter out orders without ebook
+    .map(order => ({
+      ...order.ebook.toObject(),
+      purchaseDate: order.createdAt,
+      orderId: order._id
+    }));
 
   res.json(ebooks);
 });

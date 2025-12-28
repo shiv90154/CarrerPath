@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import UserManagementDebug from '../components/UserManagementDebug';
 
 interface User {
     _id: string;
@@ -119,8 +120,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
                                 <p className="text-blue-100">{user.email}</p>
                                 <div className="flex items-center space-x-4 mt-2">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.role === 'admin' ? 'bg-red-500 text-white' :
-                                            user.role === 'instructor' ? 'bg-yellow-500 text-white' :
-                                                'bg-green-500 text-white'
+                                        user.role === 'instructor' ? 'bg-yellow-500 text-white' :
+                                            'bg-green-500 text-white'
                                         }`}>
                                         {user.role.toUpperCase()}
                                     </span>
@@ -148,8 +149,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <span className="mr-2">{tab.icon}</span>
@@ -306,8 +307,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
                                     onClick={handleStatusToggle}
                                     disabled={loading}
                                     className={`w-full px-4 py-2 rounded-lg font-medium ${user.isActive
-                                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                        : 'bg-green-100 text-green-700 hover:bg-green-200'
                                         } disabled:opacity-50`}
                                 >
                                     {loading ? 'Updating...' : (user.isActive ? 'Deactivate User' : 'Activate User')}
@@ -344,6 +345,7 @@ const AdminUserListPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [showDebug, setShowDebug] = useState(false);
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalAdmins: 0,
@@ -357,7 +359,22 @@ const AdminUserListPage: React.FC = () => {
     }, [currentPage, searchTerm, roleFilter, statusFilter]);
 
     const fetchUsers = async () => {
-        if (!user?.token) return;
+        if (!user?.token) {
+            console.log('❌ No user token available');
+            setError('Authentication required');
+            setLoading(false);
+            return;
+        }
+
+        console.log('🔍 Fetching users with params:', {
+            page: currentPage,
+            limit: 10,
+            search: searchTerm,
+            role: roleFilter,
+            status: statusFilter,
+            userRole: user.role,
+            hasToken: !!user.token
+        });
 
         setLoading(true);
         try {
@@ -369,18 +386,36 @@ const AdminUserListPage: React.FC = () => {
                 status: statusFilter
             });
 
+            console.log('📡 Making API call to:', `https://carrerpath-m48v.onrender.com/api/admin/users?${params}`);
+
             const { data } = await axios.get<UsersResponse>(
                 `https://carrerpath-m48v.onrender.com/api/admin/users?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
+
+            console.log('✅ Users fetched successfully:', {
+                userCount: data.users.length,
+                totalUsers: data.total,
+                stats: data.stats
+            });
 
             setUsers(data.users);
             setTotalPages(data.totalPages);
             setStats(data.stats);
             setError(null);
         } catch (err: any) {
-            console.error('Error fetching users:', err);
-            setError('Failed to fetch users');
+            console.error('❌ Error fetching users:', {
+                message: err.message,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data,
+                config: {
+                    url: err.config?.url,
+                    method: err.config?.method,
+                    headers: err.config?.headers
+                }
+            });
+            setError(`Failed to fetch users: ${err.response?.data?.message || err.message}`);
         } finally {
             setLoading(false);
         }
@@ -423,13 +458,26 @@ const AdminUserListPage: React.FC = () => {
                         </div>
                         <Link
                             to="/admin/dashboard"
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-3"
                         >
                             Back to Dashboard
                         </Link>
+                        <button
+                            onClick={() => setShowDebug(!showDebug)}
+                            className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
+                        >
+                            {showDebug ? 'Hide Debug' : 'Show Debug'}
+                        </button>
                     </div>
                 </div>
             </div>
+
+            {/* Debug Panel */}
+            {showDebug && (
+                <div className="container mx-auto px-4 py-6">
+                    <UserManagementDebug />
+                </div>
+            )}
 
             {/* Stats Cards */}
             <div className="container mx-auto px-4 py-6">
@@ -586,8 +634,8 @@ const AdminUserListPage: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userData.role === 'admin' ? 'bg-red-100 text-red-800' :
-                                                            userData.role === 'instructor' ? 'bg-yellow-100 text-yellow-800' :
-                                                                'bg-green-100 text-green-800'
+                                                        userData.role === 'instructor' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-green-100 text-green-800'
                                                         }`}>
                                                         {userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}
                                                     </span>
@@ -660,8 +708,8 @@ const AdminUserListPage: React.FC = () => {
                                                             key={page}
                                                             onClick={() => setCurrentPage(page)}
                                                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
-                                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                                 }`}
                                                         >
                                                             {page}

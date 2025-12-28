@@ -190,6 +190,9 @@ exports.togglePublishStatus = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
     try {
+        console.log('📋 Admin fetching all notices...');
+        console.log('User:', req.user?.name, 'Role:', req.user?.role);
+
         const {
             page = 1,
             limit = 20,
@@ -200,21 +203,27 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
             isPublished
         } = req.query;
 
+        console.log('Query params:', { page, limit, category, badge, targetAudience, search, isPublished });
+
         const query = {};
 
         // Apply filters
         if (category) query.category = category;
         if (badge) query.badge = badge;
         if (targetAudience) query.targetAudience = targetAudience;
-        if (isPublished !== undefined) query.isPublished = isPublished === 'true';
+        if (isPublished !== undefined && isPublished !== '') {
+            query.isPublished = isPublished === 'true';
+        }
 
         // Search in title and description
-        if (search) {
+        if (search && search.trim()) {
             query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { title: { $regex: search.trim(), $options: 'i' } },
+                { description: { $regex: search.trim(), $options: 'i' } }
             ];
         }
+
+        console.log('Final query:', JSON.stringify(query));
 
         const notices = await Notice.find(query)
             .sort({ priority: -1, publishDate: -1, createdAt: -1 })
@@ -224,6 +233,8 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
             .limit(parseInt(limit));
 
         const total = await Notice.countDocuments(query);
+
+        console.log(`✅ Found ${notices.length} notices out of ${total} total`);
 
         res.json({
             success: true,
@@ -236,10 +247,10 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Get all notices error:', error);
+        console.error('❌ Get all notices error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error',
+            message: 'Server error - ' + error.message,
             error: error.message
         });
     }
@@ -334,16 +345,20 @@ exports.getNoticeById = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get statistics
-// @route   GET /api/notices/stats
+// @route   GET /api/notices/admin/stats
 // @access  Private (Admin)
 exports.getStatistics = asyncHandler(async (req, res) => {
     try {
+        console.log('📊 Admin fetching notice statistics...');
+
         const total = await Notice.countDocuments();
         const published = await Notice.countDocuments({ isPublished: true });
         const unpublished = total - published;
         const expired = await Notice.countDocuments({
             expiryDate: { $lt: new Date() }
         });
+
+        console.log('Basic stats:', { total, published, unpublished, expired });
 
         // Category-wise count
         const categoryStats = await Notice.aggregate([
@@ -370,6 +385,8 @@ exports.getStatistics = asyncHandler(async (req, res) => {
             { $sort: { count: -1 } }
         ]);
 
+        console.log('✅ Statistics fetched successfully');
+
         res.json({
             success: true,
             data: {
@@ -377,15 +394,15 @@ exports.getStatistics = asyncHandler(async (req, res) => {
                 published,
                 unpublished,
                 expired,
-                categoryStats,
-                badgeStats
+                categoryStats: categoryStats || [],
+                badgeStats: badgeStats || []
             }
         });
     } catch (error) {
-        console.error('Get statistics error:', error);
+        console.error('❌ Get statistics error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error',
+            message: 'Server error - ' + error.message,
             error: error.message
         });
     }

@@ -366,14 +366,18 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
   }
 
   // Filter content based on access for non-purchasers
-  const filteredContent = course.content.map(category => ({
-    ...category.toObject(),
-    subcategories: category.subcategories.map(subcategory => ({
-      ...subcategory.toObject(),
-      videos: subcategory.videos.filter(v => v.isFree === true || v.isPreview === true)
-    })),
-    videos: category.videos.filter(v => v.isFree === true || v.isPreview === true)
-  }));
+  const filteredContent = course.content
+    .filter(category => category) // Filter out null categories
+    .map(category => ({
+      ...category.toObject(),
+      subcategories: category.subcategories
+        .filter(subcategory => subcategory) // Filter out null subcategories
+        .map(subcategory => ({
+          ...subcategory.toObject(),
+          videos: subcategory.videos ? subcategory.videos.filter(v => v && (v.isFree === true || v.isPreview === true)) : []
+        })),
+      videos: category.videos ? category.videos.filter(v => v && (v.isFree === true || v.isPreview === true)) : []
+    }));
 
   // Only show free videos and preview videos for non-purchasers (legacy support)
   const freeVideos = course.videos.filter(v => v.isFree === true || v.isPreview === true);
