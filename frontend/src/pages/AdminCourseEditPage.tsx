@@ -194,6 +194,27 @@ const AdminCourseEditPage: React.FC = () => {
   };
 
   const openVideoModal = (categoryIndex?: number, subcategoryIndex?: number) => {
+    // Validate categoryIndex before opening modal
+    if (categoryIndex !== undefined) {
+      if (!content || content.length === 0) {
+        alert('Please add at least one category before uploading videos.');
+        return;
+      }
+
+      if (categoryIndex < 0 || categoryIndex >= content.length || !content[categoryIndex]) {
+        alert(`Invalid category index: ${categoryIndex}. Please refresh the page and try again.`);
+        return;
+      }
+
+      if (subcategoryIndex !== undefined) {
+        const category = content[categoryIndex];
+        if (!category.subcategories || subcategoryIndex < 0 || subcategoryIndex >= category.subcategories.length || !category.subcategories[subcategoryIndex]) {
+          alert(`Invalid subcategory index: ${subcategoryIndex}. Please refresh the page and try again.`);
+          return;
+        }
+      }
+    }
+
     setVideoModalContext({ categoryIndex, subcategoryIndex });
     setShowVideoModal(true);
   };

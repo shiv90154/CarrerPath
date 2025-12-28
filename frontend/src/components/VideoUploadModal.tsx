@@ -88,10 +88,18 @@ const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
         uploadFormData.append('isPreview', formData.isPreview.toString());
 
         // Add hierarchical content structure info if provided
-        if (categoryIndex !== undefined) {
-            uploadFormData.append('categoryIndex', categoryIndex.toString());
-            if (subcategoryIndex !== undefined) {
-                uploadFormData.append('subcategoryIndex', subcategoryIndex.toString());
+        if (categoryIndex !== undefined && categoryIndex !== null) {
+            // Ensure categoryIndex is a valid number
+            const validCategoryIndex = parseInt(categoryIndex.toString());
+            if (!isNaN(validCategoryIndex) && validCategoryIndex >= 0) {
+                uploadFormData.append('categoryIndex', validCategoryIndex.toString());
+
+                if (subcategoryIndex !== undefined && subcategoryIndex !== null) {
+                    const validSubcategoryIndex = parseInt(subcategoryIndex.toString());
+                    if (!isNaN(validSubcategoryIndex) && validSubcategoryIndex >= 0) {
+                        uploadFormData.append('subcategoryIndex', validSubcategoryIndex.toString());
+                    }
+                }
             }
         }
 

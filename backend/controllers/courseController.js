@@ -323,22 +323,24 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
     .populate({
       path: "videos",
       options: { sort: { order: 1 } }
-    })
-    .populate({
-      path: "content.subcategories.videos",
-      model: "Video",
-      options: { sort: { order: 1 } }
-    })
-    .populate({
-      path: "content.videos",
-      model: "Video",
-      options: { sort: { order: 1 } }
     });
 
   if (!course || !course.isActive) {
     res.status(404);
     throw new Error("Course not found");
   }
+
+  // Manually populate videos in content structure
+  await Course.populate(course, [
+    {
+      path: "content.subcategories.videos",
+      model: "Video"
+    },
+    {
+      path: "content.videos",
+      model: "Video"
+    }
+  ]);
 
   const user = req.user || null;
   let hasPurchased = false;
@@ -394,7 +396,7 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
     }));
 
   // Only show free videos and preview videos for non-purchasers (legacy support)
-  const freeVideos = course.videos.filter(v => v.isFree === true || v.isPreview === true);
+  const freeVideos = course.videos.filter(v => v && (v.isFree === true || v.isPreview === true));
 
   res.json({
     ...course.toObject(),
@@ -510,11 +512,30 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
   } = req.body;
   const courseId = req.params.id;
 
+  console.log('📹 Video upload request:', {
+    courseId,
+    title,
+    categoryIndex,
+    subcategoryIndex,
+    categoryIndexType: typeof categoryIndex,
+    subcategoryIndexType: typeof subcategoryIndex
+  });
+
   const course = await Course.findById(courseId);
   if (!course) {
     res.status(404);
     throw new Error("Course not found");
   }
+
+  console.log('📚 Course content structure:', {
+    courseTitle: course.title,
+    contentLength: course.content ? course.content.length : 'undefined',
+    contentStructure: course.content ? course.content.map((cat, idx) => ({
+      index: idx,
+      name: cat ? cat.categoryName : 'null/undefined',
+      subcategoriesCount: cat && cat.subcategories ? cat.subcategories.length : 0
+    })) : 'no content'
+  });
 
   if (!req.file) {
     res.status(400);
@@ -553,22 +574,33 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
     const createdVideo = await video.save();
 
     // Add video to hierarchical content structure
-    if (categoryIndex !== undefined) {
-      if (!course.content[categoryIndex]) {
+    if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
+      const catIndex = parseInt(categoryIndex);
+
+      // Validate category index
+      if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
         res.status(400);
-        throw new Error("Invalid category index");
+        throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
       }
 
-      if (subcategoryIndex !== undefined) {
-        // Add to subcategory
-        if (!course.content[categoryIndex].subcategories[subcategoryIndex]) {
+      if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
+        const subIndex = parseInt(subcategoryIndex);
+
+        // Validate subcategory index
+        if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
+          subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
           res.status(400);
-          throw new Error("Invalid subcategory index");
+          throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
         }
-        course.content[categoryIndex].subcategories[subcategoryIndex].videos.push(createdVideo._id);
+
+        // Add to subcategory
+        course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
       } else {
         // Add to category directly
-        course.content[categoryIndex].videos.push(createdVideo._id);
+        if (!course.content[catIndex].videos) {
+          course.content[catIndex].videos = [];
+        }
+        course.content[catIndex].videos.push(createdVideo._id);
       }
     } else {
       // Add to legacy videos array
