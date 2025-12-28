@@ -7,19 +7,37 @@ const Order = require('../models/Order');
 // @route   POST /api/ebooks/admin
 // @access  Private/Admin
 const createEbook = asyncHandler(async (req, res) => {
-  const { title, description, price, isFree, category } = req.body;
-
-  let fileUrl = '';
-  let coverImageUrl = '/images/sample-ebook-cover.jpg'; // Default cover image
-
-  // Upload ebook file if exists
-  if (req.files && req.files.ebook) {
-    const result = await cloudinary.uploader.upload(req.files.ebook[0].path, {
-      folder: 'ebooks',
-      resource_type: 'auto',
-    });
-    fileUrl = result.secure_url;
+  if (req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized");
   }
+
+  const {
+    title,
+    description,
+    fullDescription,
+    price,
+    originalPrice,
+    category,
+    language,
+    tags,
+    isbn,
+    content, // New hierarchical content structure
+    hasPreviewSample,
+    previewPages,
+    downloadLimit,
+    watermarkEnabled,
+    printingAllowed,
+    offlineAccess,
+    validityPeriod
+  } = req.body;
+
+  if (!title || !price || !category || !fullDescription) {
+    res.status(400);
+    throw new Error("Title, price, category and full description are required");
+  }
+
+  let coverImageUrl = '/images/sample-ebook-cover.jpg'; // Default cover image
 
   // Upload cover image if exists
   if (req.files && req.files.coverImage) {
@@ -35,11 +53,22 @@ const createEbook = asyncHandler(async (req, res) => {
   const ebook = new Ebook({
     title,
     description,
+    fullDescription,
     price,
+    originalPrice: originalPrice || price,
     coverImage: coverImageUrl,
-    fileUrl,
-    isFree,
     category,
+    language: language || 'English',
+    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+    isbn,
+    content: content || [], // Initialize with hierarchical content structure
+    hasPreviewSample: hasPreviewSample !== undefined ? hasPreviewSample : true,
+    previewPages: previewPages || 10,
+    downloadLimit: downloadLimit || 3,
+    watermarkEnabled: watermarkEnabled !== undefined ? watermarkEnabled : true,
+    printingAllowed: printingAllowed !== undefined ? printingAllowed : false,
+    offlineAccess: offlineAccess !== undefined ? offlineAccess : true,
+    validityPeriod: validityPeriod || 0,
     author: req.user._id,
   });
 
@@ -76,7 +105,27 @@ const getEbookById = asyncHandler(async (req, res) => {
 // @route   PUT /api/ebooks/admin/:id
 // @access  Private/Admin
 const updateEbook = asyncHandler(async (req, res) => {
-  const { title, description, price, isFree, category } = req.body;
+  const {
+    title,
+    description,
+    fullDescription,
+    price,
+    originalPrice,
+    category,
+    language,
+    tags,
+    isbn,
+    content, // New hierarchical content structure
+    hasPreviewSample,
+    previewPages,
+    downloadLimit,
+    watermarkEnabled,
+    printingAllowed,
+    offlineAccess,
+    validityPeriod,
+    isActive,
+    isFeatured
+  } = req.body;
 
   const ebook = await Ebook.findById(req.params.id);
 
@@ -88,10 +137,28 @@ const updateEbook = asyncHandler(async (req, res) => {
   let updateData = {
     title: title || ebook.title,
     description: description || ebook.description,
+    fullDescription: fullDescription || ebook.fullDescription,
     price: price !== undefined ? price : ebook.price,
-    isFree: isFree !== undefined ? isFree : ebook.isFree,
+    originalPrice: originalPrice !== undefined ? originalPrice : ebook.originalPrice,
     category: category || ebook.category,
+    language: language || ebook.language,
+    tags: tags ? tags.split(',').map(tag => tag.trim()) : ebook.tags,
+    isbn: isbn || ebook.isbn,
+    hasPreviewSample: hasPreviewSample !== undefined ? hasPreviewSample : ebook.hasPreviewSample,
+    previewPages: previewPages !== undefined ? previewPages : ebook.previewPages,
+    downloadLimit: downloadLimit !== undefined ? downloadLimit : ebook.downloadLimit,
+    watermarkEnabled: watermarkEnabled !== undefined ? watermarkEnabled : ebook.watermarkEnabled,
+    printingAllowed: printingAllowed !== undefined ? printingAllowed : ebook.printingAllowed,
+    offlineAccess: offlineAccess !== undefined ? offlineAccess : ebook.offlineAccess,
+    validityPeriod: validityPeriod !== undefined ? validityPeriod : ebook.validityPeriod,
+    isActive: isActive !== undefined ? isActive : ebook.isActive,
+    isFeatured: isFeatured !== undefined ? isFeatured : ebook.isFeatured,
   };
+
+  // Update hierarchical content structure if provided
+  if (content) {
+    updateData.content = content;
+  }
 
   // Upload new cover image if provided
   if (req.files && req.files.coverImage) {
@@ -112,25 +179,6 @@ const updateEbook = asyncHandler(async (req, res) => {
       crop: 'fill',
     });
     updateData.coverImage = result.secure_url;
-  }
-
-  // Upload new ebook file if provided
-  if (req.files && req.files.ebook) {
-    // Delete old ebook file from Cloudinary if exists
-    if (ebook.fileUrl) {
-      const publicId = ebook.fileUrl.split('/').pop().split('.')[0];
-      try {
-        await cloudinary.uploader.destroy(`ebooks/${publicId}`);
-      } catch (error) {
-        console.log('Error deleting old ebook file:', error);
-      }
-    }
-
-    const result = await cloudinary.uploader.upload(req.files.ebook[0].path, {
-      folder: 'ebooks',
-      resource_type: 'auto',
-    });
-    updateData.fileUrl = result.secure_url;
   }
 
   const updatedEbook = await Ebook.findByIdAndUpdate(
@@ -205,7 +253,7 @@ const getEbookByIdPublic = asyncHandler(async (req, res) => {
   const ebook = await Ebook.findById(req.params.id)
     .populate('author', 'name bio avatar');
 
-  if (!ebook) {
+  if (!ebook || !ebook.isActive) {
     res.status(404);
     throw new Error('E-book not found');
   }
@@ -247,21 +295,91 @@ const getEbookByIdPublic = asyncHandler(async (req, res) => {
     rating: ebook.rating,
     totalRatings: ebook.totalRatings,
     totalDownloads: ebook.totalDownloads,
+    totalBooks: ebook.totalBooks,
     discountPercentage: ebook.discountPercentage,
     isFeatured: ebook.isFeatured,
+    hasPreviewSample: ebook.hasPreviewSample,
+    previewPages: ebook.previewPages,
+    downloadLimit: ebook.downloadLimit,
+    watermarkEnabled: ebook.watermarkEnabled,
+    printingAllowed: ebook.printingAllowed,
+    offlineAccess: ebook.offlineAccess,
+    validityPeriod: ebook.validityPeriod,
     hasPurchased: userHasPurchased,
     createdAt: ebook.createdAt,
     updatedAt: ebook.updatedAt,
   };
 
-  // If ebook is free or user has purchased, include download URL
-  if (ebook.isFree || userHasPurchased) {
-    responseData.downloadUrl = ebook.fileUrl;
-  }
+  // Handle hierarchical content structure
+  if (ebook.content && ebook.content.length > 0) {
+    if (userHasPurchased || ebook.isFree) {
+      // Full access - include all books with download URLs
+      responseData.content = ebook.content.map(category => ({
+        ...category.toObject(),
+        subcategories: category.subcategories.map(subcategory => ({
+          ...subcategory.toObject(),
+          books: subcategory.books.map(book => ({
+            ...book.toObject(),
+            downloadUrl: book.fileUrl,
+            canDownload: true
+          }))
+        })),
+        books: category.books.map(book => ({
+          ...book.toObject(),
+          downloadUrl: book.fileUrl,
+          canDownload: true
+        }))
+      }));
+      responseData.accessType = 'full';
+    } else {
+      // Limited access - show preview samples only
+      const filteredContent = ebook.content.map(category => ({
+        ...category.toObject(),
+        subcategories: category.subcategories.map(subcategory => ({
+          ...subcategory.toObject(),
+          books: subcategory.books.map(book => ({
+            ...book.toObject(),
+            downloadUrl: book.isFree ? book.fileUrl : null,
+            previewUrl: book.hasPreview ? book.previewUrl : null,
+            canDownload: book.isFree,
+            isPreviewOnly: !book.isFree
+          }))
+        })),
+        books: category.books.map(book => ({
+          ...book.toObject(),
+          downloadUrl: book.isFree ? book.fileUrl : null,
+          previewUrl: book.hasPreview ? book.previewUrl : null,
+          canDownload: book.isFree,
+          isPreviewOnly: !book.isFree
+        }))
+      }));
 
-  // Include preview URL if available
-  if (ebook.previewUrl) {
-    responseData.previewUrl = ebook.previewUrl;
+      responseData.content = filteredContent;
+      responseData.accessType = 'limited';
+
+      // Calculate total locked books
+      let totalLockedBooks = 0;
+      ebook.content.forEach(category => {
+        totalLockedBooks += category.books.filter(book => !book.isFree).length;
+        category.subcategories.forEach(subcategory => {
+          totalLockedBooks += subcategory.books.filter(book => !book.isFree).length;
+        });
+      });
+      responseData.totalLockedBooks = totalLockedBooks;
+    }
+  } else {
+    // Fallback to legacy structure
+    if (ebook.isFree || userHasPurchased) {
+      responseData.downloadUrl = ebook.fileUrl;
+      responseData.canDownload = true;
+    }
+
+    // Include preview URL if available
+    if (ebook.previewUrl) {
+      responseData.previewUrl = ebook.previewUrl;
+    }
+
+    responseData.accessType = (ebook.isFree || userHasPurchased) ? 'full' : 'limited';
   }
 
   res.json(responseData);

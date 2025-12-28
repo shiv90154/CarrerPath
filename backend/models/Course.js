@@ -53,6 +53,39 @@ const CourseSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    // Course content organized in hierarchical structure
+    // Course → Categories → Subcategories → Videos
+    content: [{
+      categoryName: {
+        type: String,
+        required: true, // e.g., "General Studies", "Himachal GK", "English"
+      },
+      categoryDescription: {
+        type: String,
+        default: ''
+      },
+      subcategories: [{
+        subcategoryName: {
+          type: String,
+          required: true, // e.g., "History", "Geography", "Indian Polity"
+        },
+        subcategoryDescription: {
+          type: String,
+          default: ''
+        },
+        videos: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Video',
+        }]
+      }],
+      // For categories without subcategories, videos go directly here
+      videos: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Video',
+      }]
+    }],
+
+    // Legacy support - keep existing videos array for backward compatibility
     videos: [
       {
         type: mongoose.Schema.Types.ObjectId,

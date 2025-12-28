@@ -33,6 +33,19 @@ interface Video {
     views: number;
 }
 
+interface Subcategory {
+    subcategoryName: string;
+    subcategoryDescription?: string;
+    videos: Video[];
+}
+
+interface Category {
+    categoryName: string;
+    categoryDescription?: string;
+    subcategories: Subcategory[];
+    videos: Video[]; // For categories without subcategories
+}
+
 interface Course {
     _id: string;
     title: string;
@@ -54,7 +67,8 @@ interface Course {
         bio: string;
         avatar: string;
     };
-    videos: Video[];
+    videos: Video[]; // Legacy support
+    content: Category[]; // New hierarchical structure
     totalVideos: number;
     totalDuration: string;
     enrolledStudents: number;
@@ -395,8 +409,8 @@ const CourseDetailPage: React.FC = () => {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id as any)}
                                             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                                                    ? 'border-[#D4AF37] text-[#0B1F33] bg-[#D4AF37]/5'
-                                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                ? 'border-[#D4AF37] text-[#0B1F33] bg-[#D4AF37]/5'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                                 }`}
                                         >
                                             <tab.icon className="w-4 h-4" />
@@ -451,7 +465,7 @@ const CourseDetailPage: React.FC = () => {
                                     <div>
                                         <div className="flex items-center justify-between mb-6">
                                             <h3 className="text-xl font-bold text-gray-900">
-                                                Course Content ({course.videos.length} videos)
+                                                Course Content
                                             </h3>
                                             {!course.hasPurchased && course.totalLockedVideos && (
                                                 <span className="text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
@@ -460,65 +474,240 @@ const CourseDetailPage: React.FC = () => {
                                             )}
                                         </div>
 
-                                        <div className="space-y-2">
-                                            {course.videos.map((video, index) => {
-                                                const isAccessible = video.isFree || video.isPreview || course.hasPurchased;
-                                                const isActive = currentVideo?._id === video._id;
+                                        {/* New Hierarchical Content Structure */}
+                                        {course.content && course.content.length > 0 ? (
+                                            <div className="space-y-6">
+                                                {course.content.map((category, categoryIndex) => (
+                                                    <div key={categoryIndex} className="border border-gray-200 rounded-xl overflow-hidden">
+                                                        {/* Category Header */}
+                                                        <div className="bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 px-6 py-4 border-b border-gray-200">
+                                                            <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                                                                <span className="bg-[#D4AF37] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                                                                    {categoryIndex + 1}
+                                                                </span>
+                                                                {category.categoryName}
+                                                            </h3>
+                                                            {category.categoryDescription && (
+                                                                <p className="text-gray-600 mt-2 ml-11">{category.categoryDescription}</p>
+                                                            )}
+                                                        </div>
 
-                                                return (
-                                                    <div
-                                                        key={video._id}
-                                                        onClick={() => handleVideoClick(video)}
-                                                        className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border ${isActive
+                                                        {/* Category Content */}
+                                                        <div className="p-6">
+                                                            {/* Subcategories */}
+                                                            {category.subcategories && category.subcategories.length > 0 ? (
+                                                                <div className="space-y-4">
+                                                                    {category.subcategories.map((subcategory, subIndex) => (
+                                                                        <div key={subIndex} className="ml-4">
+                                                                            {/* Subcategory Header */}
+                                                                            <div className="flex items-center mb-3">
+                                                                                <span className="text-[#D4AF37] mr-2 text-lg">👉</span>
+                                                                                <h4 className="text-lg font-semibold text-gray-700">
+                                                                                    {subcategory.subcategoryName}
+                                                                                </h4>
+                                                                                <span className="ml-2 text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                                                                    {subcategory.videos.length} videos
+                                                                                </span>
+                                                                            </div>
+
+                                                                            {/* Subcategory Description */}
+                                                                            {subcategory.subcategoryDescription && (
+                                                                                <p className="text-gray-600 mb-3 ml-6">{subcategory.subcategoryDescription}</p>
+                                                                            )}
+
+                                                                            {/* Videos in Subcategory */}
+                                                                            <div className="ml-6 space-y-2">
+                                                                                {subcategory.videos.map((video, videoIndex) => {
+                                                                                    const isAccessible = video.isFree || video.isPreview || course.hasPurchased;
+                                                                                    const isActive = currentVideo?._id === video._id;
+
+                                                                                    return (
+                                                                                        <div
+                                                                                            key={video._id}
+                                                                                            onClick={() => handleVideoClick(video)}
+                                                                                            className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border ${isActive
+                                                                                                ? 'bg-[#D4AF37]/10 border-[#D4AF37] shadow-md'
+                                                                                                : 'hover:bg-gray-50 border-gray-200 hover:border-gray-300'
+                                                                                                }`}
+                                                                                        >
+                                                                                            <div className="flex items-center justify-between">
+                                                                                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                                                                    <div className="flex-shrink-0">
+                                                                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAccessible ? 'bg-green-100' : 'bg-gray-100'
+                                                                                                            }`}>
+                                                                                                            {isAccessible ? (
+                                                                                                                <Play className="w-4 h-4 text-green-600" />
+                                                                                                            ) : (
+                                                                                                                <Lock className="w-4 h-4 text-gray-400" />
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div className="flex-1 min-w-0">
+                                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                                            <span className="text-sm text-gray-500 font-medium">
+                                                                                                                {videoIndex + 1}.
+                                                                                                            </span>
+                                                                                                            <h4 className={`font-medium truncate ${isAccessible ? 'text-gray-900' : 'text-gray-500'
+                                                                                                                }`}>
+                                                                                                                {video.title}
+                                                                                                            </h4>
+                                                                                                        </div>
+                                                                                                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                                                                            <span className="flex items-center gap-1">
+                                                                                                                <Clock className="w-3 h-3" />
+                                                                                                                {video.duration}
+                                                                                                            </span>
+                                                                                                            {video.isFree && (
+                                                                                                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                                                    Free
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                            {video.isPreview && (
+                                                                                                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                                                    Preview
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                /* Direct videos in category (no subcategories) */
+                                                                category.videos && category.videos.length > 0 && (
+                                                                    <div className="space-y-2">
+                                                                        {category.videos.map((video, videoIndex) => {
+                                                                            const isAccessible = video.isFree || video.isPreview || course.hasPurchased;
+                                                                            const isActive = currentVideo?._id === video._id;
+
+                                                                            return (
+                                                                                <div
+                                                                                    key={video._id}
+                                                                                    onClick={() => handleVideoClick(video)}
+                                                                                    className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border ${isActive
+                                                                                        ? 'bg-[#D4AF37]/10 border-[#D4AF37] shadow-md'
+                                                                                        : 'hover:bg-gray-50 border-gray-200 hover:border-gray-300'
+                                                                                        }`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                                                            <div className="flex-shrink-0">
+                                                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAccessible ? 'bg-green-100' : 'bg-gray-100'
+                                                                                                    }`}>
+                                                                                                    {isAccessible ? (
+                                                                                                        <Play className="w-4 h-4 text-green-600" />
+                                                                                                    ) : (
+                                                                                                        <Lock className="w-4 h-4 text-gray-400" />
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div className="flex-1 min-w-0">
+                                                                                                <div className="flex items-center gap-2 mb-1">
+                                                                                                    <span className="text-sm text-gray-500 font-medium">
+                                                                                                        {videoIndex + 1}.
+                                                                                                    </span>
+                                                                                                    <h4 className={`font-medium truncate ${isAccessible ? 'text-gray-900' : 'text-gray-500'
+                                                                                                        }`}>
+                                                                                                        {video.title}
+                                                                                                    </h4>
+                                                                                                </div>
+                                                                                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                                                                    <span className="flex items-center gap-1">
+                                                                                                        <Clock className="w-3 h-3" />
+                                                                                                        {video.duration}
+                                                                                                    </span>
+                                                                                                    {video.isFree && (
+                                                                                                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                                            Free
+                                                                                                        </span>
+                                                                                                    )}
+                                                                                                    {video.isPreview && (
+                                                                                                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                                            Preview
+                                                                                                        </span>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            /* Fallback to Legacy Video Structure */
+                                            <div className="space-y-2">
+                                                {course.videos.map((video, index) => {
+                                                    const isAccessible = video.isFree || video.isPreview || course.hasPurchased;
+                                                    const isActive = currentVideo?._id === video._id;
+
+                                                    return (
+                                                        <div
+                                                            key={video._id}
+                                                            onClick={() => handleVideoClick(video)}
+                                                            className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border ${isActive
                                                                 ? 'bg-[#D4AF37]/10 border-[#D4AF37] shadow-md'
                                                                 : 'hover:bg-gray-50 border-gray-200 hover:border-gray-300'
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                                                <div className="flex-shrink-0">
-                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAccessible ? 'bg-green-100' : 'bg-gray-100'
-                                                                        }`}>
-                                                                        {isAccessible ? (
-                                                                            <Play className="w-4 h-4 text-green-600" />
-                                                                        ) : (
-                                                                            <Lock className="w-4 h-4 text-gray-400" />
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                        <span className="text-sm text-gray-500 font-medium">
-                                                                            {index + 1}.
-                                                                        </span>
-                                                                        <h4 className={`font-medium truncate ${isAccessible ? 'text-gray-900' : 'text-gray-500'
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                                    <div className="flex-shrink-0">
+                                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAccessible ? 'bg-green-100' : 'bg-gray-100'
                                                                             }`}>
-                                                                            {video.title}
-                                                                        </h4>
+                                                                            {isAccessible ? (
+                                                                                <Play className="w-4 h-4 text-green-600" />
+                                                                            ) : (
+                                                                                <Lock className="w-4 h-4 text-gray-400" />
+                                                                            )}
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                                                                        <span className="flex items-center gap-1">
-                                                                            <Clock className="w-3 h-3" />
-                                                                            {video.duration}
-                                                                        </span>
-                                                                        {video.isFree && (
-                                                                            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">
-                                                                                Free
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <span className="text-sm text-gray-500 font-medium">
+                                                                                {index + 1}.
                                                                             </span>
-                                                                        )}
-                                                                        {video.isPreview && (
-                                                                            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">
-                                                                                Preview
+                                                                            <h4 className={`font-medium truncate ${isAccessible ? 'text-gray-900' : 'text-gray-500'
+                                                                                }`}>
+                                                                                {video.title}
+                                                                            </h4>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                                            <span className="flex items-center gap-1">
+                                                                                <Clock className="w-3 h-3" />
+                                                                                {video.duration}
                                                                             </span>
-                                                                        )}
+                                                                            {video.isFree && (
+                                                                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                    Free
+                                                                                </span>
+                                                                            )}
+                                                                            {video.isPreview && (
+                                                                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                                                                    Preview
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 

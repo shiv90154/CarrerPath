@@ -28,9 +28,135 @@ const EbookSchema = mongoose.Schema(
       required: true,
       default: '/images/sample-ebook-cover.jpg',
     },
+
+    // Hierarchical content structure for E-books
+    // Ebook → Categories → Subcategories → Books/Chapters
+    content: [{
+      categoryName: {
+        type: String,
+        required: true, // e.g., "NCERT Books", "Reference Books", "Previous Year Papers"
+      },
+      categoryDescription: {
+        type: String,
+        default: ''
+      },
+      subcategories: [{
+        subcategoryName: {
+          type: String,
+          required: true, // e.g., "Class 11", "Class 12", "History", "Geography"
+        },
+        subcategoryDescription: {
+          type: String,
+          default: ''
+        },
+        books: [{
+          title: {
+            type: String,
+            required: true,
+          },
+          description: {
+            type: String,
+            default: ''
+          },
+          fileUrl: {
+            type: String,
+            required: true,
+          },
+          previewUrl: {
+            type: String, // URL for preview/sample pages
+          },
+          coverImage: {
+            type: String,
+            default: ''
+          },
+          pages: {
+            type: Number,
+            default: 0,
+          },
+          fileSize: {
+            type: String, // e.g., "2.5 MB"
+            default: ''
+          },
+          format: {
+            type: String,
+            enum: ['PDF', 'EPUB', 'MOBI'],
+            default: 'PDF',
+          },
+          isFree: {
+            type: Boolean,
+            default: false,
+          },
+          hasPreview: {
+            type: Boolean,
+            default: true,
+          },
+          previewPages: {
+            type: Number,
+            default: 10, // Number of preview pages
+          },
+          order: {
+            type: Number,
+            default: 1,
+          }
+        }]
+      }],
+      // For categories without subcategories, books go directly here
+      books: [{
+        title: {
+          type: String,
+          required: true,
+        },
+        description: {
+          type: String,
+          default: ''
+        },
+        fileUrl: {
+          type: String,
+          required: true,
+        },
+        previewUrl: {
+          type: String, // URL for preview/sample pages
+        },
+        coverImage: {
+          type: String,
+          default: ''
+        },
+        pages: {
+          type: Number,
+          default: 0,
+        },
+        fileSize: {
+          type: String, // e.g., "2.5 MB"
+          default: ''
+        },
+        format: {
+          type: String,
+          enum: ['PDF', 'EPUB', 'MOBI'],
+          default: 'PDF',
+        },
+        isFree: {
+          type: Boolean,
+          default: false,
+        },
+        hasPreview: {
+          type: Boolean,
+          default: true,
+        },
+        previewPages: {
+          type: Number,
+          default: 10, // Number of preview pages
+        },
+        order: {
+          type: Number,
+          default: 1,
+        }
+      }]
+    }],
+
+    // Legacy support - keep existing fields for backward compatibility
     fileUrl: {
       type: String,
-      required: true,
+      required: false, // Made optional for hierarchical structure
     },
     previewUrl: {
       type: String, // URL for preview/sample pages
@@ -50,11 +176,11 @@ const EbookSchema = mongoose.Schema(
     },
     pages: {
       type: Number,
-      required: true,
+      required: false, // Made optional for hierarchical structure
     },
     fileSize: {
       type: String, // e.g., "2.5 MB"
-      required: true,
+      required: false, // Made optional for hierarchical structure
     },
     format: {
       type: String,
@@ -88,6 +214,10 @@ const EbookSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalBooks: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -95,6 +225,35 @@ const EbookSchema = mongoose.Schema(
     isFeatured: {
       type: Boolean,
       default: false,
+    },
+    // E-book specific features
+    hasPreviewSample: {
+      type: Boolean,
+      default: true,
+    },
+    previewPages: {
+      type: Number,
+      default: 10, // Number of preview pages for the collection
+    },
+    downloadLimit: {
+      type: Number,
+      default: 3, // Number of times user can download
+    },
+    watermarkEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    printingAllowed: {
+      type: Boolean,
+      default: false,
+    },
+    offlineAccess: {
+      type: Boolean,
+      default: true,
+    },
+    validityPeriod: {
+      type: Number, // in days, 0 means lifetime access
+      default: 0,
     },
   },
   {
@@ -110,6 +269,21 @@ EbookSchema.virtual('discountPercentage').get(function () {
     return Math.round(((this.originalPrice - this.price) / this.originalPrice) * 100);
   }
   return 0;
+});
+
+// Update totalBooks when content changes
+EbookSchema.pre('save', function (next) {
+  let totalBooks = 0;
+  if (this.content && this.content.length > 0) {
+    this.content.forEach(category => {
+      totalBooks += category.books.length;
+      category.subcategories.forEach(subcategory => {
+        totalBooks += subcategory.books.length;
+      });
+    });
+  }
+  this.totalBooks = totalBooks;
+  next();
 });
 
 const Ebook = mongoose.model('Ebook', EbookSchema);

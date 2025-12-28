@@ -31,7 +31,8 @@ const createCourse = asyncHandler(async (req, res) => {
     language,
     tags,
     requirements,
-    whatYouWillLearn
+    whatYouWillLearn,
+    content // New hierarchical content structure
   } = req.body;
 
   if (!title || !price || !category || !fullDescription) {
@@ -53,6 +54,7 @@ const createCourse = asyncHandler(async (req, res) => {
     tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
     requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
     whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
+    content: content || [], // Initialize with hierarchical content structure
     instructor: req.user._id,
   });
 
@@ -122,6 +124,7 @@ const updateCourse = asyncHandler(async (req, res) => {
     tags,
     requirements,
     whatYouWillLearn,
+    content, // New hierarchical content structure
     isActive,
     isFeatured
   } = req.body;
@@ -141,6 +144,11 @@ const updateCourse = asyncHandler(async (req, res) => {
   course.whatYouWillLearn = whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : course.whatYouWillLearn;
   course.isActive = isActive !== undefined ? isActive : course.isActive;
   course.isFeatured = isFeatured !== undefined ? isFeatured : course.isFeatured;
+
+  // Update hierarchical content structure if provided
+  if (content) {
+    course.content = content;
+  }
 
   const updatedCourse = await course.save();
   res.json(updatedCourse);
@@ -274,6 +282,16 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
     .populate({
       path: "videos",
       options: { sort: { order: 1 } }
+    })
+    .populate({
+      path: "content.subcategories.videos",
+      model: "Video",
+      options: { sort: { order: 1 } }
+    })
+    .populate({
+      path: "content.videos",
+      model: "Video",
+      options: { sort: { order: 1 } }
     });
 
   if (!course || !course.isActive) {
@@ -320,11 +338,22 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only show free videos and preview videos for non-purchasers
+  // Filter content based on access for non-purchasers
+  const filteredContent = course.content.map(category => ({
+    ...category.toObject(),
+    subcategories: category.subcategories.map(subcategory => ({
+      ...subcategory.toObject(),
+      videos: subcategory.videos.filter(v => v.isFree === true || v.isPreview === true)
+    })),
+    videos: category.videos.filter(v => v.isFree === true || v.isPreview === true)
+  }));
+
+  // Only show free videos and preview videos for non-purchasers (legacy support)
   const freeVideos = course.videos.filter(v => v.isFree === true || v.isPreview === true);
 
   res.json({
     ...course.toObject(),
+    content: filteredContent,
     videos: freeVideos,
     hasPurchased: false,
     accessType: 'limited',

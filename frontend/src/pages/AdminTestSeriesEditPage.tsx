@@ -3,6 +3,47 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
+interface TestData {
+  _id?: string;
+  title: string;
+  description: string;
+  duration: number;
+  totalQuestions: number;
+  totalMarks: number;
+  difficulty: string;
+  isFree: boolean;
+  isPreview: boolean;
+  order: number;
+}
+
+interface LiveTestData {
+  _id?: string;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalQuestions: number;
+  totalMarks: number;
+  maxParticipants: number;
+  order: number;
+}
+
+interface SubcategoryData {
+  subcategoryName: string;
+  subcategoryDescription: string;
+  tests: TestData[];
+  liveTests: LiveTestData[];
+}
+
+interface CategoryData {
+  categoryName: string;
+  categoryDescription: string;
+  subcategories: SubcategoryData[];
+  tests: TestData[]; // Direct tests without subcategories
+  liveTests: LiveTestData[]; // Direct live tests without subcategories
+}
+
 interface TestSeriesData {
   title: string;
   description: string;
@@ -18,20 +59,14 @@ interface TestSeriesData {
   requirements: string;
   whatYouWillLearn: string;
   validityPeriod: number;
+  hasLiveTests: boolean;
+  liveTestSchedule: string;
+  resultAnalysis: boolean;
+  rankingSystem: boolean;
+  solutionAvailable: boolean;
   isActive: boolean;
   isFeatured: boolean;
-}
-
-interface Test {
-  _id?: string;
-  title: string;
-  description: string;
-  duration: number;
-  totalQuestions: number;
-  maxMarks: number;
-  difficulty: string;
-  isFree: boolean;
-  order: number;
+  content: CategoryData[]; // Hierarchical content structure
 }
 
 const AdminTestSeriesEditPage: React.FC = () => {
@@ -54,14 +89,21 @@ const AdminTestSeriesEditPage: React.FC = () => {
     requirements: '',
     whatYouWillLearn: '',
     validityPeriod: 365,
+    hasLiveTests: false,
+    liveTestSchedule: '',
+    resultAnalysis: true,
+    rankingSystem: true,
+    solutionAvailable: true,
     isActive: true,
     isFeatured: false,
+    content: [], // Initialize with hierarchical content structure
   });
 
-  const [tests, setTests] = useState<Test[]>([]);
+  const [tests, setTests] = useState<TestData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'basic' | 'content'>('basic');
 
   useEffect(() => {
     if (user?.role !== 'admin') {

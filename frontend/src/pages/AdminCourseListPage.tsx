@@ -11,6 +11,15 @@ interface Course {
   image: string;
   category: string;
   instructor: { name: string };
+  totalVideos: number;
+  content?: Array<{
+    categoryName: string;
+    subcategories: Array<{
+      subcategoryName: string;
+      videos: any[];
+    }>;
+    videos: any[];
+  }>;
 }
 
 const AdminCourseListPage: React.FC = () => {
@@ -45,6 +54,22 @@ const AdminCourseListPage: React.FC = () => {
     fetchCourses();
   }, [user, navigate]);
 
+  const getContentSummary = (course: Course) => {
+    if (!course.content || course.content.length === 0) {
+      return `${course.totalVideos || 0} videos (Legacy)`;
+    }
+
+    const totalCategories = course.content.length;
+    const totalSubcategories = course.content.reduce((sum, cat) => sum + cat.subcategories.length, 0);
+    const totalVideos = course.content.reduce((sum, cat) => {
+      const categoryVideos = cat.videos.length;
+      const subcategoryVideos = cat.subcategories.reduce((subSum, sub) => subSum + sub.videos.length, 0);
+      return sum + categoryVideos + subcategoryVideos;
+    }, 0);
+
+    return `${totalCategories} categories, ${totalSubcategories} subcategories, ${totalVideos} videos`;
+  };
+
   const deleteCourseHandler = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this course and all its associated videos?')) {
       try {
@@ -73,10 +98,10 @@ const AdminCourseListPage: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Structure</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -84,10 +109,25 @@ const AdminCourseListPage: React.FC = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {courses.map((course) => (
               <tr key={course._id}>
-                <td className="px-6 py-4 whitespace-nowrap">{course._id}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.title}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{course.title}</div>
+                  <div className="text-sm text-gray-500 truncate max-w-xs">{course.description}</div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">₹{course.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {course.category}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{getContentSummary(course)}</div>
+                  {course.content && course.content.length > 0 && (
+                    <div className="text-xs text-green-600 font-medium">✓ Hierarchical Structure</div>
+                  )}
+                  {(!course.content || course.content.length === 0) && (
+                    <div className="text-xs text-orange-600 font-medium">⚠ Legacy Structure</div>
+                  )}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">{course.instructor.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Link to={`/admin/courses/${course._id}/edit`} className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</Link>

@@ -8,49 +8,64 @@ const Order = require('../models/Order');
 // @route   POST /api/testseries/admin
 // @access  Private/Admin
 const createTestSeries = asyncHandler(async (req, res) => {
-  const { title, description, price, image, category, tests } = req.body;
+  if (req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized");
+  }
+
+  const {
+    title,
+    description,
+    fullDescription,
+    price,
+    originalPrice,
+    image,
+    category,
+    level,
+    duration,
+    language,
+    tags,
+    requirements,
+    whatYouWillLearn,
+    content, // New hierarchical content structure
+    validityPeriod,
+    hasLiveTests,
+    liveTestSchedule,
+    resultAnalysis,
+    rankingSystem,
+    solutionAvailable
+  } = req.body;
+
+  if (!title || !price || !category || !fullDescription) {
+    res.status(400);
+    throw new Error("Title, price, category and full description are required");
+  }
 
   const testSeries = new TestSeries({
     title,
     description,
+    fullDescription,
     price,
+    originalPrice: originalPrice || price,
     image: image || '/images/sample.jpg',
     category,
+    level: level || 'Beginner',
+    duration,
+    language: language || 'English',
+    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+    requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
+    whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
+    content: content || [], // Initialize with hierarchical content structure
+    validityPeriod: validityPeriod || 365,
+    hasLiveTests: hasLiveTests || false,
+    liveTestSchedule: liveTestSchedule || '',
+    resultAnalysis: resultAnalysis !== undefined ? resultAnalysis : true,
+    rankingSystem: rankingSystem !== undefined ? rankingSystem : true,
+    solutionAvailable: solutionAvailable !== undefined ? solutionAvailable : true,
     instructor: req.user._id,
   });
 
   const createdTestSeries = await testSeries.save();
-
-  // Create and associate tests and questions
-  if (tests && tests.length > 0) {
-    for (const testData of tests) {
-      const newTest = new Test({
-        title: testData.title,
-        description: testData.description,
-        duration: testData.duration,
-        passMark: testData.passMark,
-        isFree: testData.isFree,
-        testSeries: createdTestSeries._id,
-      });
-      const savedTest = await newTest.save();
-
-      if (testData.questions && testData.questions.length > 0) {
-        for (const questionData of testData.questions) {
-          const newQuestion = new Question({
-            questionText: questionData.questionText,
-            options: questionData.options,
-            test: savedTest._id,
-          });
-          const savedQuestion = await newQuestion.save();
-          savedTest.questions.push(savedQuestion._id);
-        }
-        await savedTest.save();
-      }
-      createdTestSeries.tests.push(savedTest._id);
-    }
-    await createdTestSeries.save();
-  }
-
   res.status(201).json(createdTestSeries);
 });
 
@@ -87,23 +102,67 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
 // @route   PUT /api/testseries/admin/:id
 // @access  Private/Admin
 const updateTestSeries = asyncHandler(async (req, res) => {
-  const { title, description, price, image, category } = req.body;
+  const {
+    title,
+    description,
+    fullDescription,
+    price,
+    originalPrice,
+    image,
+    category,
+    level,
+    duration,
+    language,
+    tags,
+    requirements,
+    whatYouWillLearn,
+    content, // New hierarchical content structure
+    validityPeriod,
+    hasLiveTests,
+    liveTestSchedule,
+    resultAnalysis,
+    rankingSystem,
+    solutionAvailable,
+    isActive,
+    isFeatured
+  } = req.body;
 
   const testSeries = await TestSeries.findById(req.params.id);
 
-  if (testSeries) {
-    testSeries.title = title || testSeries.title;
-    testSeries.description = description || testSeries.description;
-    testSeries.price = price || testSeries.price;
-    testSeries.image = image || testSeries.image;
-    testSeries.category = category || testSeries.category;
-
-    const updatedTestSeries = await testSeries.save();
-    res.json(updatedTestSeries);
-  } else {
+  if (!testSeries) {
     res.status(404);
     throw new Error('Test Series not found');
   }
+
+  testSeries.title = title || testSeries.title;
+  testSeries.description = description || testSeries.description;
+  testSeries.fullDescription = fullDescription || testSeries.fullDescription;
+  testSeries.price = price !== undefined ? price : testSeries.price;
+  testSeries.originalPrice = originalPrice !== undefined ? originalPrice : testSeries.originalPrice;
+  testSeries.image = image || testSeries.image;
+  testSeries.category = category || testSeries.category;
+  testSeries.level = level || testSeries.level;
+  testSeries.duration = duration || testSeries.duration;
+  testSeries.language = language || testSeries.language;
+  testSeries.tags = tags ? tags.split(',').map(tag => tag.trim()) : testSeries.tags;
+  testSeries.requirements = requirements ? requirements.split(',').map(req => req.trim()) : testSeries.requirements;
+  testSeries.whatYouWillLearn = whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : testSeries.whatYouWillLearn;
+  testSeries.validityPeriod = validityPeriod !== undefined ? validityPeriod : testSeries.validityPeriod;
+  testSeries.hasLiveTests = hasLiveTests !== undefined ? hasLiveTests : testSeries.hasLiveTests;
+  testSeries.liveTestSchedule = liveTestSchedule !== undefined ? liveTestSchedule : testSeries.liveTestSchedule;
+  testSeries.resultAnalysis = resultAnalysis !== undefined ? resultAnalysis : testSeries.resultAnalysis;
+  testSeries.rankingSystem = rankingSystem !== undefined ? rankingSystem : testSeries.rankingSystem;
+  testSeries.solutionAvailable = solutionAvailable !== undefined ? solutionAvailable : testSeries.solutionAvailable;
+  testSeries.isActive = isActive !== undefined ? isActive : testSeries.isActive;
+  testSeries.isFeatured = isFeatured !== undefined ? isFeatured : testSeries.isFeatured;
+
+  // Update hierarchical content structure if provided
+  if (content) {
+    testSeries.content = content;
+  }
+
+  const updatedTestSeries = await testSeries.save();
+  res.json(updatedTestSeries);
 });
 
 // @desc    Delete a test series
@@ -308,9 +367,47 @@ const getTestSeriesByIdPublic = asyncHandler(async (req, res) => {
       populate: {
         path: 'questions',
       },
+    })
+    .populate({
+      path: 'liveTests',
+      populate: {
+        path: 'questions',
+      },
+    })
+    .populate({
+      path: 'content.subcategories.tests',
+      model: 'Test',
+      populate: {
+        path: 'questions',
+        model: 'Question'
+      }
+    })
+    .populate({
+      path: 'content.subcategories.liveTests',
+      model: 'LiveTest',
+      populate: {
+        path: 'questions',
+        model: 'Question'
+      }
+    })
+    .populate({
+      path: 'content.tests',
+      model: 'Test',
+      populate: {
+        path: 'questions',
+        model: 'Question'
+      }
+    })
+    .populate({
+      path: 'content.liveTests',
+      model: 'LiveTest',
+      populate: {
+        path: 'questions',
+        model: 'Question'
+      }
     });
 
-  if (!testSeries) {
+  if (!testSeries || !testSeries.isActive) {
     res.status(404);
     throw new Error('Test Series not found');
   }
@@ -348,6 +445,7 @@ const getTestSeriesByIdPublic = asyncHandler(async (req, res) => {
     whatYouWillLearn: testSeries.whatYouWillLearn,
     instructor: testSeries.instructor,
     totalTests: testSeries.totalTests,
+    totalLiveTests: testSeries.totalLiveTests,
     totalQuestions: testSeries.totalQuestions,
     enrolledStudents: testSeries.enrolledStudents,
     rating: testSeries.rating,
@@ -355,37 +453,87 @@ const getTestSeriesByIdPublic = asyncHandler(async (req, res) => {
     discountPercentage: testSeries.discountPercentage,
     isFeatured: testSeries.isFeatured,
     validityPeriod: testSeries.validityPeriod,
+    hasLiveTests: testSeries.hasLiveTests,
+    liveTestSchedule: testSeries.liveTestSchedule,
+    resultAnalysis: testSeries.resultAnalysis,
+    rankingSystem: testSeries.rankingSystem,
+    solutionAvailable: testSeries.solutionAvailable,
     hasPurchased: userHasPurchased,
     createdAt: testSeries.createdAt,
     updatedAt: testSeries.updatedAt,
   };
 
-  // Handle test access based on purchase status
-  if (userHasPurchased) {
-    // Full access - include all tests
-    responseData.tests = testSeries.tests;
-    responseData.accessType = 'full';
-  } else {
-    // Limited access - only show free tests or first test as preview
-    const freeTests = testSeries.tests.filter(test => test.isFree);
-    if (freeTests.length > 0) {
-      responseData.tests = freeTests;
-      responseData.accessType = 'limited';
-      responseData.totalLockedTests = testSeries.tests.length - freeTests.length;
+  // Handle hierarchical content structure
+  if (testSeries.content && testSeries.content.length > 0) {
+    if (userHasPurchased) {
+      // Full access - include all tests and live tests
+      responseData.content = testSeries.content;
+      responseData.accessType = 'full';
     } else {
-      // Show first test as preview but mark questions as locked
-      const previewTest = testSeries.tests[0];
-      if (previewTest) {
-        responseData.tests = [{
+      // Limited access - filter content based on free tests
+      const filteredContent = testSeries.content.map(category => ({
+        ...category.toObject(),
+        subcategories: category.subcategories.map(subcategory => ({
+          ...subcategory.toObject(),
+          tests: subcategory.tests.filter(test => test.isFree || test.isPreview),
+          liveTests: subcategory.liveTests.filter(liveTest => liveTest.isFree || liveTest.isPreview)
+        })),
+        tests: category.tests.filter(test => test.isFree || test.isPreview),
+        liveTests: category.liveTests.filter(liveTest => liveTest.isFree || liveTest.isPreview)
+      }));
+
+      responseData.content = filteredContent;
+      responseData.accessType = 'limited';
+
+      // Calculate total locked tests
+      let totalLockedTests = 0;
+      testSeries.content.forEach(category => {
+        totalLockedTests += category.tests.filter(test => !test.isFree && !test.isPreview).length;
+        totalLockedTests += category.liveTests.filter(liveTest => !liveTest.isFree && !liveTest.isPreview).length;
+        category.subcategories.forEach(subcategory => {
+          totalLockedTests += subcategory.tests.filter(test => !test.isFree && !test.isPreview).length;
+          totalLockedTests += subcategory.liveTests.filter(liveTest => !liveTest.isFree && !liveTest.isPreview).length;
+        });
+      });
+      responseData.totalLockedTests = totalLockedTests;
+    }
+  } else {
+    // Fallback to legacy structure
+    if (userHasPurchased) {
+      // Full access - include all tests
+      responseData.tests = testSeries.tests;
+      responseData.liveTests = testSeries.liveTests;
+      responseData.accessType = 'full';
+    } else {
+      // Limited access - only show free tests or first test as preview
+      const freeTests = testSeries.tests.filter(test => test.isFree);
+      const freeLiveTests = testSeries.liveTests.filter(liveTest => liveTest.isFree);
+
+      if (freeTests.length > 0 || freeLiveTests.length > 0) {
+        responseData.tests = freeTests;
+        responseData.liveTests = freeLiveTests;
+        responseData.accessType = 'limited';
+        responseData.totalLockedTests = (testSeries.tests.length - freeTests.length) + (testSeries.liveTests.length - freeLiveTests.length);
+      } else {
+        // Show first test as preview but mark questions as locked
+        const previewTest = testSeries.tests[0];
+        const previewLiveTest = testSeries.liveTests[0];
+
+        responseData.tests = previewTest ? [{
           ...previewTest.toObject(),
           questions: [], // Hide questions for preview
           isPreview: true
-        }];
-      } else {
-        responseData.tests = [];
+        }] : [];
+
+        responseData.liveTests = previewLiveTest ? [{
+          ...previewLiveTest.toObject(),
+          questions: [], // Hide questions for preview
+          isPreview: true
+        }] : [];
+
+        responseData.accessType = 'locked';
+        responseData.totalLockedTests = testSeries.tests.length + testSeries.liveTests.length;
       }
-      responseData.accessType = 'locked';
-      responseData.totalLockedTests = testSeries.tests.length;
     }
   }
 
