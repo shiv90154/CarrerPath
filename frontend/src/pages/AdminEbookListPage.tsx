@@ -23,9 +23,20 @@ interface Ebook {
   rating: number;
   totalRatings: number;
   totalDownloads: number;
+  totalBooks: number;
   isFree: boolean;
   isActive: boolean;
   isFeatured: boolean;
+  hasPreviewSample: boolean;
+  content?: Array<{
+    categoryName: string;
+    categoryDescription: string;
+    subcategories: Array<{
+      subcategoryName: string;
+      books: any[];
+    }>;
+    books: any[];
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -168,6 +179,36 @@ const AdminEbookListPage: React.FC = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getContentSummary = (ebook: Ebook) => {
+    if (!ebook.content || ebook.content.length === 0) {
+      return {
+        categories: 0,
+        subcategories: 0,
+        hierarchicalBooks: 0,
+        hasHierarchicalContent: false
+      };
+    }
+
+    let subcategories = 0;
+    let hierarchicalBooks = 0;
+
+    ebook.content.forEach(category => {
+      subcategories += category.subcategories.length;
+      hierarchicalBooks += category.books.length;
+
+      category.subcategories.forEach(subcategory => {
+        hierarchicalBooks += subcategory.books.length;
+      });
+    });
+
+    return {
+      categories: ebook.content.length,
+      subcategories,
+      hierarchicalBooks,
+      hasHierarchicalContent: true
+    };
   };
 
   if (loading) {
@@ -415,7 +456,7 @@ const AdminEbookListPage: React.FC = () => {
                       Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Details
+                      Content Structure
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Downloads
@@ -475,9 +516,49 @@ const AdminEbookListPage: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>{ebook.pages} pages</div>
-                        <div className="text-xs text-gray-500">{ebook.fileSize}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {(() => {
+                          const contentSummary = getContentSummary(ebook);
+                          if (contentSummary.hasHierarchicalContent) {
+                            return (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900">
+                                  📁 {contentSummary.categories} Categories
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  👉 {contentSummary.subcategories} Subcategories
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  📚 {contentSummary.hierarchicalBooks} Books
+                                </div>
+                                {ebook.hasPreviewSample && (
+                                  <div className="text-xs text-green-600 font-medium">
+                                    👁️ Preview Available
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900">
+                                  📄 {ebook.pages} pages
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  💾 {ebook.fileSize} • {ebook.format}
+                                </div>
+                                {ebook.totalBooks > 0 && (
+                                  <div className="text-xs text-gray-500">
+                                    📚 {ebook.totalBooks} Books (Legacy)
+                                  </div>
+                                )}
+                                <div className="text-xs text-orange-600">
+                                  ⚠️ No hierarchical structure
+                                </div>
+                              </div>
+                            );
+                          }
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{ebook.totalDownloads}</div>
@@ -490,8 +571,8 @@ const AdminEbookListPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ebook.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                             }`}>
                             {ebook.isActive ? 'Active' : 'Inactive'}
                           </span>
@@ -518,8 +599,8 @@ const AdminEbookListPage: React.FC = () => {
                           <button
                             onClick={() => toggleStatus(ebook._id, ebook.isActive)}
                             className={`${ebook.isActive
-                                ? 'text-red-600 hover:text-red-900'
-                                : 'text-green-600 hover:text-green-900'
+                              ? 'text-red-600 hover:text-red-900'
+                              : 'text-green-600 hover:text-green-900'
                               }`}
                           >
                             {ebook.isActive ? 'Deactivate' : 'Activate'}

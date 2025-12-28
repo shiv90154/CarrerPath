@@ -41,6 +41,10 @@ const OrderSchema = mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'StudyMaterial',
       },
+      currentAffairsPackage: { // NEW
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CurrentAffairsPackage',
+      },
       price: {
         type: Number,
         required: true,

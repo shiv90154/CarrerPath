@@ -20,11 +20,24 @@ interface TestSeries {
     email: string;
   };
   totalTests: number;
+  totalLiveTests: number;
   enrolledStudents: number;
   rating: number;
   totalRatings: number;
   isActive: boolean;
   isFeatured: boolean;
+  hasLiveTests: boolean;
+  content?: Array<{
+    categoryName: string;
+    categoryDescription: string;
+    subcategories: Array<{
+      subcategoryName: string;
+      tests: any[];
+      liveTests: any[];
+    }>;
+    tests: any[];
+    liveTests: any[];
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -157,6 +170,41 @@ const AdminTestSeriesListPage: React.FC = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getContentSummary = (series: TestSeries) => {
+    if (!series.content || series.content.length === 0) {
+      return {
+        categories: 0,
+        subcategories: 0,
+        hierarchicalTests: 0,
+        hierarchicalLiveTests: 0,
+        hasHierarchicalContent: false
+      };
+    }
+
+    let subcategories = 0;
+    let hierarchicalTests = 0;
+    let hierarchicalLiveTests = 0;
+
+    series.content.forEach(category => {
+      subcategories += category.subcategories.length;
+      hierarchicalTests += category.tests.length;
+      hierarchicalLiveTests += category.liveTests.length;
+
+      category.subcategories.forEach(subcategory => {
+        hierarchicalTests += subcategory.tests.length;
+        hierarchicalLiveTests += subcategory.liveTests.length;
+      });
+    });
+
+    return {
+      categories: series.content.length,
+      subcategories,
+      hierarchicalTests,
+      hierarchicalLiveTests,
+      hasHierarchicalContent: true
+    };
   };
 
   if (loading) {
@@ -373,7 +421,7 @@ const AdminTestSeriesListPage: React.FC = () => {
                       Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tests
+                      Content Structure
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Students
@@ -427,8 +475,49 @@ const AdminTestSeriesListPage: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {series.totalTests}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {(() => {
+                          const contentSummary = getContentSummary(series);
+                          if (contentSummary.hasHierarchicalContent) {
+                            return (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900">
+                                  📁 {contentSummary.categories} Categories
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  👉 {contentSummary.subcategories} Subcategories
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  📝 {contentSummary.hierarchicalTests} Tests
+                                  {contentSummary.hierarchicalLiveTests > 0 && (
+                                    <span className="ml-2">🔴 {contentSummary.hierarchicalLiveTests} Live</span>
+                                  )}
+                                </div>
+                                {series.hasLiveTests && (
+                                  <div className="text-xs text-green-600 font-medium">
+                                    ✅ Live Tests Enabled
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900">
+                                  📝 {series.totalTests} Tests (Legacy)
+                                </div>
+                                {series.totalLiveTests > 0 && (
+                                  <div className="text-xs text-gray-500">
+                                    🔴 {series.totalLiveTests} Live Tests
+                                  </div>
+                                )}
+                                <div className="text-xs text-orange-600">
+                                  ⚠️ No hierarchical structure
+                                </div>
+                              </div>
+                            );
+                          }
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {series.enrolledStudents}
@@ -436,8 +525,8 @@ const AdminTestSeriesListPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${series.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                             }`}>
                             {series.isActive ? 'Active' : 'Inactive'}
                           </span>
@@ -459,8 +548,8 @@ const AdminTestSeriesListPage: React.FC = () => {
                           <button
                             onClick={() => toggleStatus(series._id, series.isActive)}
                             className={`${series.isActive
-                                ? 'text-red-600 hover:text-red-900'
-                                : 'text-green-600 hover:text-green-900'
+                              ? 'text-red-600 hover:text-red-900'
+                              : 'text-green-600 hover:text-green-900'
                               }`}
                           >
                             {series.isActive ? 'Deactivate' : 'Activate'}
