@@ -27,10 +27,13 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// 🔴 THIS IS THE KEY
+// File size limits (100MB for videos, 10MB for images/PDFs)
 const upload = multer({
   storage,
   fileFilter,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
 });
 
-module.exports = upload; // ⬅️ MUST be default export
+module.exports = upload;

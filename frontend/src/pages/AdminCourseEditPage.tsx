@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
+import VideoUploadModal from '../components/VideoUploadModal';
 
 interface VideoData {
   _id?: string;
@@ -68,6 +69,11 @@ const AdminCourseEditPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'content'>('basic');
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoModalContext, setVideoModalContext] = useState<{
+    categoryIndex?: number;
+    subcategoryIndex?: number;
+  }>({});
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -177,12 +183,25 @@ const AdminCourseEditPage: React.FC = () => {
       };
       await axios.post(`https://carrerpath-m48v.onrender.com/api/courses/admin/${courseId}/videos`, formData, config);
       alert('Video uploaded successfully');
-      // TODO: Refresh course videos after upload
+      // Refresh course data
+      window.location.reload();
     } catch (err: any) {
       console.error(err);
       alert(err.response?.data?.message || 'Failed to upload video');
     } finally {
       setUploadingVideo(false);
+    }
+  };
+
+  const openVideoModal = (categoryIndex?: number, subcategoryIndex?: number) => {
+    setVideoModalContext({ categoryIndex, subcategoryIndex });
+    setShowVideoModal(true);
+  };
+
+  const handleVideoUploadSuccess = (video: any) => {
+    // Refresh course data to show new video
+    if (id) {
+      window.location.reload();
     }
   };
 
@@ -305,8 +324,8 @@ const AdminCourseEditPage: React.FC = () => {
             <button
               onClick={() => setActiveTab('basic')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'basic'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Basic Information
@@ -314,8 +333,8 @@ const AdminCourseEditPage: React.FC = () => {
             <button
               onClick={() => setActiveTab('content')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'content'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Course Content Structure
@@ -540,10 +559,11 @@ const AdminCourseEditPage: React.FC = () => {
                                 <div className="flex justify-between items-center mb-2">
                                   <h6 className="text-sm font-medium text-gray-600">Videos in this Subcategory</h6>
                                   <button
-                                    onClick={() => addVideoToSubcategory(categoryIndex, subcategoryIndex)}
+                                    type="button"
+                                    onClick={() => openVideoModal(categoryIndex, subcategoryIndex)}
                                     className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs"
                                   >
-                                    + Add Video
+                                    + Upload Video
                                   </button>
                                 </div>
 
@@ -602,10 +622,11 @@ const AdminCourseEditPage: React.FC = () => {
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="text-md font-semibold text-gray-700">Direct Videos (No Subcategory)</h4>
                             <button
-                              onClick={() => addVideoToCategory(categoryIndex)}
+                              type="button"
+                              onClick={() => openVideoModal(categoryIndex)}
                               className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded text-sm"
                             >
-                              + Add Direct Video
+                              + Upload Video
                             </button>
                           </div>
 
@@ -709,6 +730,16 @@ const AdminCourseEditPage: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        courseId={id || ''}
+        categoryIndex={videoModalContext.categoryIndex}
+        subcategoryIndex={videoModalContext.subcategoryIndex}
+        onUploadSuccess={handleVideoUploadSuccess}
+      />
     </div>
   );
 };

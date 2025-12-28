@@ -199,32 +199,59 @@ const uploadVideo = asyncHandler(async (req, res) => {
     throw new Error("No video file uploaded");
   }
 
-  const result = await cloudinary.uploader.upload(req.file.path, {
-    resource_type: "video",
-    folder: `institute-website/courses/${course._id}/videos`,
-  });
+  try {
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "video",
+      folder: `institute-website/courses/${course._id}/videos`,
+      transformation: [
+        { quality: "auto" },
+        { fetch_format: "auto" }
+      ]
+    });
 
-  // remove temp file
-  fs.unlinkSync(req.file.path);
+    // Clean up temp file asynchronously
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting temp file:', err);
+    });
 
-  const video = new Video({
-    title,
-    description,
-    videoUrl: result.secure_url,
-    thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"), // Generate thumbnail URL
-    duration: duration || '0:00',
-    order: order || 1,
-    isFree: isFree === "true",
-    isPreview: isPreview === "true",
-    course: courseId,
-  });
+    // Create video document
+    const video = new Video({
+      title,
+      description,
+      videoUrl: result.secure_url,
+      thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"), // Generate thumbnail URL
+      duration: duration || '0:00',
+      order: order || 1,
+      isFree: isFree === "true" || isFree === true,
+      isPreview: isPreview === "true" || isPreview === true,
+      course: courseId,
+    });
 
-  const createdVideo = await video.save();
+    const createdVideo = await video.save();
 
-  course.videos.push(createdVideo._id);
-  await course.save();
+    // Add video to course
+    course.videos.push(createdVideo._id);
+    await course.save();
 
-  res.status(201).json(createdVideo);
+    res.status(201).json({
+      success: true,
+      message: "Video uploaded successfully",
+      video: createdVideo
+    });
+
+  } catch (error) {
+    // Clean up temp file on error
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting temp file on error:', err);
+      });
+    }
+
+    console.error('Video upload error:', error);
+    res.status(500);
+    throw new Error("Failed to upload video: " + error.message);
+  }
 });
 
 /* =========================================================
@@ -442,6 +469,116 @@ const getVideoById = asyncHandler(async (req, res) => {
   res.json(video);
 });
 
+/* =========================================================
+   @desc    Upload video to hierarchical content structure
+   @route   POST /api/courses/admin/:id/content/videos
+   @access  Private/Admin
+========================================================= */
+const uploadVideoToContent = asyncHandler(async (req, res) => {
+  if (req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized");
+  }
+
+  const {
+    title,
+    description,
+    duration,
+    order,
+    isFree,
+    isPreview,
+    categoryIndex,
+    subcategoryIndex
+  } = req.body;
+  const courseId = req.params.id;
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    res.status(404);
+    throw new Error("Course not found");
+  }
+
+  if (!req.file) {
+    res.status(400);
+    throw new Error("No video file uploaded");
+  }
+
+  try {
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "video",
+      folder: `institute-website/courses/${course._id}/videos`,
+      transformation: [
+        { quality: "auto" },
+        { fetch_format: "auto" }
+      ]
+    });
+
+    // Clean up temp file asynchronously
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting temp file:', err);
+    });
+
+    // Create video document
+    const video = new Video({
+      title,
+      description,
+      videoUrl: result.secure_url,
+      thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"),
+      duration: duration || '0:00',
+      order: order || 1,
+      isFree: isFree === "true" || isFree === true,
+      isPreview: isPreview === "true" || isPreview === true,
+      course: courseId,
+    });
+
+    const createdVideo = await video.save();
+
+    // Add video to hierarchical content structure
+    if (categoryIndex !== undefined) {
+      if (!course.content[categoryIndex]) {
+        res.status(400);
+        throw new Error("Invalid category index");
+      }
+
+      if (subcategoryIndex !== undefined) {
+        // Add to subcategory
+        if (!course.content[categoryIndex].subcategories[subcategoryIndex]) {
+          res.status(400);
+          throw new Error("Invalid subcategory index");
+        }
+        course.content[categoryIndex].subcategories[subcategoryIndex].videos.push(createdVideo._id);
+      } else {
+        // Add to category directly
+        course.content[categoryIndex].videos.push(createdVideo._id);
+      }
+    } else {
+      // Add to legacy videos array
+      course.videos.push(createdVideo._id);
+    }
+
+    await course.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Video uploaded successfully to content structure",
+      video: createdVideo
+    });
+
+  } catch (error) {
+    // Clean up temp file on error
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting temp file on error:', err);
+      });
+    }
+
+    console.error('Video upload error:', error);
+    res.status(500);
+    throw new Error("Failed to upload video: " + error.message);
+  }
+});
+
 module.exports = {
   createCourse,
   getCourses,
@@ -449,6 +586,7 @@ module.exports = {
   updateCourse,
   deleteCourse,
   uploadVideo,
+  uploadVideoToContent,
   getAllCoursesPublic,
   getCourseByIdPublic,
   checkCourseAccess,

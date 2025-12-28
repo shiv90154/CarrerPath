@@ -8,6 +8,7 @@ const {
   updateCourse,
   deleteCourse,
   uploadVideo,
+  uploadVideoToContent,
   getAllCoursesPublic,
   getCourseByIdPublic,
   checkCourseAccess,
@@ -43,6 +44,15 @@ router.post(
   admin,
   upload.single("video"),
   uploadVideo
+);
+
+// Upload video to hierarchical content structure (ADMIN ONLY)
+router.post(
+  "/admin/:id/content/videos",
+  protect,
+  admin,
+  upload.single("video"),
+  uploadVideoToContent
 );
 
 /* ===========================
