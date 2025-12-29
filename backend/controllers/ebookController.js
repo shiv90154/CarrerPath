@@ -168,7 +168,7 @@ const updateEbook = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`ebook-covers/${publicId}`);
       } catch (error) {
-        console.log('Error deleting old cover image:', error);
+        // Error deleting old cover image
       }
     }
 
@@ -203,7 +203,7 @@ const deleteEbook = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`ebooks/${filePublicId}`);
       } catch (error) {
-        console.log('Error deleting ebook file:', error);
+        // Error deleting ebook file
       }
     }
 
@@ -213,7 +213,7 @@ const deleteEbook = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`ebook-covers/${coverPublicId}`);
       } catch (error) {
-        console.log('Error deleting cover image:', error);
+        // Error deleting cover image
       }
     }
 

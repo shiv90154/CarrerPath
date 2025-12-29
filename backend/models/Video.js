@@ -10,13 +10,9 @@ const VideoSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    videoUrl: {
+    youtubeVideoId: {
       type: String,
       required: true,
-    },
-    thumbnailUrl: {
-      type: String,
-      default: '',
     },
     duration: {
       type: String, // e.g., "15:30"
@@ -26,15 +22,6 @@ const VideoSchema = mongoose.Schema(
       type: Number,
       required: true,
       default: 1,
-    },
-    isFree: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    isPreview: {
-      type: Boolean,
-      default: false,
     },
     course: {
       type: mongoose.Schema.Types.ObjectId,
@@ -48,6 +35,10 @@ const VideoSchema = mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isFree: {
+      type: Boolean,
+      default: false,
     },
   },
   {

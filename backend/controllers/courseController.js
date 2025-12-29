@@ -189,17 +189,17 @@ const deleteCourse = asyncHandler(async (req, res) => {
 });
 
 /* =========================================================
-   @desc    Upload video to course
-   @route   POST /api/courses/:id/videos
+   @desc    Add video to course (YouTube ID only)
+   @route   POST /api/courses/admin/:id/videos
    @access  Private/Admin
 ========================================================= */
-const uploadVideo = asyncHandler(async (req, res) => {
+const addVideoToCourse = asyncHandler(async (req, res) => {
   if (req.user.role !== "admin") {
     res.status(403);
     throw new Error("Not authorized");
   }
 
-  const { title, description, duration, order, isFree, isPreview } = req.body;
+  const { title, description, youtubeVideoId, duration, order } = req.body;
   const courseId = req.params.id;
 
   const course = await Course.findById(courseId);
@@ -208,37 +208,20 @@ const uploadVideo = asyncHandler(async (req, res) => {
     throw new Error("Course not found");
   }
 
-  if (!req.file) {
+  // Validate YouTube video ID format (basic validation)
+  if (!youtubeVideoId || youtubeVideoId.length !== 11) {
     res.status(400);
-    throw new Error("No video file uploaded");
+    throw new Error("Invalid YouTube video ID. Must be 11 characters long.");
   }
 
   try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "video",
-      folder: `institute-website/courses/${course._id}/videos`,
-      transformation: [
-        { quality: "auto" },
-        { fetch_format: "auto" }
-      ]
-    });
-
-    // Clean up temp file asynchronously
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting temp file:', err);
-    });
-
-    // Create video document
+    // Create video document with YouTube ID only
     const video = new Video({
       title,
       description,
-      videoUrl: result.secure_url,
-      thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"), // Generate thumbnail URL
+      youtubeVideoId,
       duration: duration || '0:00',
       order: order || 1,
-      isFree: isFree === "true" || isFree === true,
-      isPreview: isPreview === "true" || isPreview === true,
       course: courseId,
     });
 
@@ -250,21 +233,21 @@ const uploadVideo = asyncHandler(async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Video uploaded successfully",
-      video: createdVideo
+      message: "Video added successfully",
+      video: {
+        _id: createdVideo._id,
+        title: createdVideo.title,
+        description: createdVideo.description,
+        duration: createdVideo.duration,
+        order: createdVideo.order
+        // Note: YouTube ID is NOT returned for security
+      }
     });
 
   } catch (error) {
-    // Clean up temp file on error
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting temp file on error:', err);
-      });
-    }
-
-    console.error('Video upload error:', error);
+    console.error('Video creation error:', error);
     res.status(500);
-    throw new Error("Failed to upload video: " + error.message);
+    throw new Error("Failed to add video: " + error.message);
   }
 });
 
@@ -349,8 +332,9 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
   if (user) {
     const order = await Order.findOne({
       user: user._id,
-      course: course._id,
-      isPaid: true,
+      itemType: 'course',
+      itemId: course._id,
+      status: 'approved',
     });
 
     if (order) {
@@ -364,7 +348,7 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
       if (!existingPurchase) {
         userDoc.purchasedCourses.push({
           course: course._id,
-          purchaseDate: order.createdAt,
+          purchaseDate: order.approvedAt || order.createdAt,
           progress: 0,
           completedVideos: []
         });
@@ -419,13 +403,14 @@ const checkCourseAccess = asyncHandler(async (req, res) => {
 
   const order = await Order.findOne({
     user: userId,
-    course: courseId,
-    isPaid: true,
+    itemType: 'course',
+    itemId: courseId,
+    status: 'approved',
   });
 
   res.json({
     hasAccess: !!order,
-    purchaseDate: order ? order.createdAt : null
+    purchaseDate: order ? order.approvedAt || order.createdAt : null
   });
 });
 
@@ -457,8 +442,9 @@ const getVideoById = asyncHandler(async (req, res) => {
   // Check if user has purchased the course
   const order = await Order.findOne({
     user: userId,
-    course: courseId,
-    isPaid: true,
+    itemType: 'course',
+    itemId: courseId,
+    status: 'approved',
   });
 
   if (!order) {
@@ -512,14 +498,7 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
   } = req.body;
   const courseId = req.params.id;
 
-  console.log('📹 Video upload request:', {
-    courseId,
-    title,
-    categoryIndex,
-    subcategoryIndex,
-    categoryIndexType: typeof categoryIndex,
-    subcategoryIndexType: typeof subcategoryIndex
-  });
+  // Video upload request received
 
   const course = await Course.findById(courseId);
   if (!course) {
@@ -527,106 +506,102 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
     throw new Error("Course not found");
   }
 
-  console.log('📚 Course content structure:', {
-    courseTitle: course.title,
-    contentLength: course.content ? course.content.length : 'undefined',
-    contentStructure: course.content ? course.content.map((cat, idx) => ({
-      index: idx,
-      name: cat ? cat.categoryName : 'null/undefined',
-      subcategoriesCount: cat && cat.subcategories ? cat.subcategories.length : 0
-    })) : 'no content'
+  // Course content structure validated
+  name: cat ? cat.categoryName : 'null/undefined',
+    subcategoriesCount: cat && cat.subcategories ? cat.subcategories.length : 0
+})) : 'no content'
   });
 
-  if (!req.file) {
-    res.status(400);
-    throw new Error("No video file uploaded");
-  }
+if (!req.file) {
+  res.status(400);
+  throw new Error("No video file uploaded");
+}
 
-  try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "video",
-      folder: `institute-website/courses/${course._id}/videos`,
-      transformation: [
-        { quality: "auto" },
-        { fetch_format: "auto" }
-      ]
-    });
+try {
+  // Upload to Cloudinary
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    resource_type: "video",
+    folder: `institute-website/courses/${course._id}/videos`,
+    transformation: [
+      { quality: "auto" },
+      { fetch_format: "auto" }
+    ]
+  });
 
-    // Clean up temp file asynchronously
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting temp file:', err);
-    });
+  // Clean up temp file asynchronously
+  fs.unlink(req.file.path, (err) => {
+    if (err) console.error('Error deleting temp file:', err);
+  });
 
-    // Create video document
-    const video = new Video({
-      title,
-      description,
-      videoUrl: result.secure_url,
-      thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"),
-      duration: duration || '0:00',
-      order: order || 1,
-      isFree: isFree === "true" || isFree === true,
-      isPreview: isPreview === "true" || isPreview === true,
-      course: courseId,
-    });
+  // Create video document
+  const video = new Video({
+    title,
+    description,
+    videoUrl: result.secure_url,
+    thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"),
+    duration: duration || '0:00',
+    order: order || 1,
+    isFree: isFree === "true" || isFree === true,
+    isPreview: isPreview === "true" || isPreview === true,
+    course: courseId,
+  });
 
-    const createdVideo = await video.save();
+  const createdVideo = await video.save();
 
-    // Add video to hierarchical content structure
-    if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
-      const catIndex = parseInt(categoryIndex);
+  // Add video to hierarchical content structure
+  if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
+    const catIndex = parseInt(categoryIndex);
 
-      // Validate category index
-      if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
+    // Validate category index
+    if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
+      res.status(400);
+      throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
+    }
+
+    if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
+      const subIndex = parseInt(subcategoryIndex);
+
+      // Validate subcategory index
+      if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
+        subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
         res.status(400);
-        throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
+        throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
       }
 
-      if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
-        const subIndex = parseInt(subcategoryIndex);
-
-        // Validate subcategory index
-        if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
-          subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
-          res.status(400);
-          throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
-        }
-
-        // Add to subcategory
-        course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
-      } else {
-        // Add to category directly
-        if (!course.content[catIndex].videos) {
-          course.content[catIndex].videos = [];
-        }
-        course.content[catIndex].videos.push(createdVideo._id);
-      }
+      // Add to subcategory
+      course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
     } else {
-      // Add to legacy videos array
-      course.videos.push(createdVideo._id);
+      // Add to category directly
+      if (!course.content[catIndex].videos) {
+        course.content[catIndex].videos = [];
+      }
+      course.content[catIndex].videos.push(createdVideo._id);
     }
-
-    await course.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Video uploaded successfully to content structure",
-      video: createdVideo
-    });
-
-  } catch (error) {
-    // Clean up temp file on error
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting temp file on error:', err);
-      });
-    }
-
-    console.error('Video upload error:', error);
-    res.status(500);
-    throw new Error("Failed to upload video: " + error.message);
+  } else {
+    // Add to legacy videos array
+    course.videos.push(createdVideo._id);
   }
+
+  await course.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Video uploaded successfully to content structure",
+    video: createdVideo
+  });
+
+} catch (error) {
+  // Clean up temp file on error
+  if (req.file && req.file.path) {
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting temp file on error:', err);
+    });
+  }
+
+  console.error('Video upload error:', error);
+  res.status(500);
+  throw new Error("Failed to upload video: " + error.message);
+}
 });
 
 module.exports = {
@@ -635,7 +610,7 @@ module.exports = {
   getCourseById,
   updateCourse,
   deleteCourse,
-  uploadVideo,
+  addVideoToCourse,
   uploadVideoToContent,
   getAllCoursesPublic,
   getCourseByIdPublic,

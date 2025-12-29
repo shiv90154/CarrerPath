@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Test route to check if admin routes are working
 router.get('/test', protect, admin, (req, res) => {
-    console.log('Admin test route hit by user:', req.user?.name);
+    // Admin test route accessed
     res.json({
         message: 'Admin routes are working!',
         user: {

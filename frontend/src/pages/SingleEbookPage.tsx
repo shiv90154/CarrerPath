@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import PaymentModal from '../components/PaymentModal';
+import GooglePayModal from '../components/GooglePayModal';
 
 interface Book {
     title: string;
@@ -647,9 +647,9 @@ const SingleEbookPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Payment Modal */}
+            {/* Google Pay Modal */}
             {showPaymentModal && ebook && (
-                <PaymentModal
+                <GooglePayModal
                     isOpen={showPaymentModal}
                     onClose={() => setShowPaymentModal(false)}
                     product={{

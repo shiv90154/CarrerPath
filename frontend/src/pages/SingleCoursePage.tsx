@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GooglePayModal from '../components/GooglePayModal';
 
 interface Video {
   _id: string;
   title: string;
   description: string;
-  videoUrl: string;
-  isFree: boolean;
+  duration: string;
+  order: number;
+  views: number;
 }
 
 interface Subcategory {
@@ -34,15 +36,47 @@ interface Course {
   instructor: { name: string };
   videos: Video[]; // Legacy support
   content: Category[]; // New hierarchical structure
+  hasPurchased?: boolean;
+  accessType?: 'full' | 'limited';
 }
 
 const SingleCoursePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasPurchased, setHasPurchased] = useState<boolean>(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Security measures
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.key === 'u') ||
+        (e.ctrlKey && e.key === 's') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I')
+      ) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -56,17 +90,6 @@ const SingleCoursePage: React.FC = () => {
         const { data } = await axios.get<Course>(`/api/courses/${id}`, config);
         setCourse(data);
         setLoading(false);
-
-        // TODO: Implement actual purchase check logic
-        // For now, assume not purchased if not logged in or if price is > 0
-        if (user && data.price > 0) {
-          // In a real app, you would check the user's purchases here
-          // For demonstration, let's assume user has purchased if they are logged in and it's a paid course
-          setHasPurchased(false);
-        } else if (user && data.price === 0) {
-          setHasPurchased(true);
-        }
-
       } catch (err) {
         setError('Failed to fetch course');
         setLoading(false);
@@ -75,290 +98,267 @@ const SingleCoursePage: React.FC = () => {
     fetchCourse();
   }, [id, user]);
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handlePurchase = async () => {
-    if (!user || !course) {
+  const handlePurchase = () => {
+    if (!user) {
       alert('Please log in to purchase this course.');
       return;
     }
 
-    if (course.price === 0) {
-      alert('This course is free and does not require purchase.');
+    if (!course) {
+      alert('Course data not loaded.');
       return;
     }
 
-    const res = await loadRazorpayScript();
-    if (!res) {
-      alert('Razorpay SDK failed to load. Are you online?');
-      return;
-    }
-
-    try {
-      const orderConfig = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data: { razorpayOrderId, amount, currency, name, email, phone, description } } = await axios.post(
-        '/api/payments/orders',
-        { amount: course.price, courseId: course._id },
-        orderConfig
-      );
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Use environment variable
-        amount: amount,
-        currency: currency,
-        name: 'Institute Name', // Replace with your institute name
-        description: description,
-        order_id: razorpayOrderId,
-        handler: async (response: any) => {
-          try {
-            const verifyConfig = {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${user.token}`,
-              },
-            };
-            await axios.post(
-              '/api/payments/verify',
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              },
-              verifyConfig
-            );
-            alert('Payment successful! You now have full access.');
-            setHasPurchased(true);
-          } catch (error: any) {
-            console.error(error);
-            alert(error.response?.data?.message || 'Payment verification failed.');
-          }
-        },
-        prefill: {
-          name,
-          email,
-          contact: phone,
-        },
-        notes: {
-          address: 'Razorpay Corporate Office',
-        },
-        theme: {
-          color: '#3399cc',
-        },
-      };
-
-      const paymentObject = new (window as any).Razorpay(options);
-      paymentObject.open();
-    } catch (error: any) {
-      console.error(error);
-      alert(error.response?.data?.message || 'Error initiating payment.');
-    }
+    setShowPaymentModal(true);
   };
 
-  if (loading) return <div className="text-center mt-8">Loading course...</div>;
-  if (error) return <div className="text-center mt-8 text-red-500">Error: {error}</div>;
-  if (!course) return <div className="text-center mt-8">Course not found.</div>;
+  const handlePaymentSuccess = () => {
+    // Refresh the course data to get updated purchase status
+    window.location.reload();
+  };
+
+  const handleVideoClick = (videoId: string) => {
+    if (!course?.hasPurchased) {
+      alert('Please purchase this course to access videos.');
+      return;
+    }
+    navigate(`/courses/${course._id}/videos/${videoId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading course...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !course) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => navigate('/courses')}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Back to Courses
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">{course.title}</h1>
-      <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
-        <img src={course.image} alt={course.title} className="w-full h-64 object-cover mb-6 rounded-md" />
-        <p className="text-lg mb-4">{course.description}</p>
-        <p className="text-xl font-semibold mb-4">Price: ₹{course.price}</p>
-        <p className="text-md text-gray-600 mb-6">Instructor: {course.instructor.name}</p>
+    <div className="min-h-screen bg-gray-50" style={{ userSelect: 'none' }}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Course Info */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <img
+                src={course.image}
+                alt={course.title}
+                className="w-full h-64 object-cover rounded-lg mb-6"
+              />
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{course.title}</h1>
+              <p className="text-gray-600 mb-6">{course.description}</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Instructor: {course.instructor.name}
+              </p>
 
-        {!hasPurchased && course.price > 0 && user && (
-          <button
-            onClick={handlePurchase}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-6"
-          >
-            Buy Now for ₹{course.price}
-          </button>
-        )}
+              {/* Course Content */}
+              <div className="mt-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Content</h3>
 
-        <h2 className="text-3xl font-bold mb-6">Course Content</h2>
-
-        {/* New Hierarchical Content Structure */}
-        {course.content && course.content.length > 0 ? (
-          <div className="space-y-6">
-            {course.content.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="border border-gray-200 rounded-lg overflow-hidden">
-                {/* Category Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                    <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                      {categoryIndex + 1}
-                    </span>
-                    {category.categoryName}
-                  </h3>
-                  {category.categoryDescription && (
-                    <p className="text-gray-600 mt-2 ml-11">{category.categoryDescription}</p>
-                  )}
-                </div>
-
-                {/* Category Content */}
-                <div className="p-6">
-                  {/* Subcategories */}
-                  {category.subcategories && category.subcategories.length > 0 ? (
-                    <div className="space-y-4">
-                      {category.subcategories.map((subcategory, subIndex) => (
-                        <div key={subIndex} className="ml-4">
-                          {/* Subcategory Header */}
-                          <div className="flex items-center mb-3">
-                            <span className="text-blue-600 mr-2">👉</span>
-                            <h4 className="text-lg font-semibold text-gray-700">
-                              {subcategory.subcategoryName}
-                            </h4>
-                            <span className="ml-2 text-sm text-gray-500">
-                              ({subcategory.videos.length} videos)
-                            </span>
-                          </div>
-
-                          {/* Subcategory Description */}
-                          {subcategory.subcategoryDescription && (
-                            <p className="text-gray-600 mb-3 ml-6">{subcategory.subcategoryDescription}</p>
+                {course.content && course.content.length > 0 ? (
+                  <div className="space-y-4">
+                    {course.content.map((category, catIndex) => (
+                      <div key={catIndex} className="border border-gray-200 rounded-lg">
+                        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                          <h4 className="font-semibold text-gray-900">{category.categoryName}</h4>
+                          {category.categoryDescription && (
+                            <p className="text-sm text-gray-600 mt-1">{category.categoryDescription}</p>
                           )}
+                        </div>
 
-                          {/* Videos in Subcategory */}
-                          <div className="ml-6 space-y-3">
-                            {subcategory.videos.map((video) => (
-                              <div key={video._id} className="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <h5 className="font-medium text-gray-800 mb-1">
-                                      {video.title}
-                                      {video.isFree && (
-                                        <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                          Free Sample
-                                        </span>
-                                      )}
-                                    </h5>
-                                    <p className="text-gray-600 text-sm mb-3">{video.description}</p>
-
-                                    {/* Video Player or Lock Message */}
-                                    {(video.isFree || hasPurchased) ? (
-                                      video.videoUrl ? (
-                                        <video controls className="w-full h-auto rounded-md max-w-md">
-                                          <source src={video.videoUrl} type="video/mp4" />
-                                          Your browser does not support the video tag.
-                                        </video>
-                                      ) : (
-                                        <p className="text-red-500 text-sm">Video URL not available.</p>
-                                      )
-                                    ) : (
-                                      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                                        <p className="text-yellow-700 text-sm flex items-center">
-                                          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                          </svg>
-                                          Purchase the course to unlock this video
-                                        </p>
-                                      </div>
-                                    )}
+                        {/* Category Videos */}
+                        {category.videos && category.videos.length > 0 && (
+                          <div className="p-4">
+                            {category.videos.map((video, videoIndex) => (
+                              <div
+                                key={video._id}
+                                onClick={() => handleVideoClick(video._id)}
+                                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${course.hasPurchased
+                                  ? 'hover:bg-blue-50 text-blue-600'
+                                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  }`}
+                              >
+                                <div className="flex items-center">
+                                  <div className="mr-3">
+                                    {course.hasPurchased ? '▶️' : '🔒'}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{video.title}</p>
+                                    <p className="text-sm text-gray-500">{video.duration}</p>
                                   </div>
                                 </div>
+                                {!course.hasPurchased && (
+                                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                    Purchase Required
+                                  </span>
+                                )}
                               </div>
                             ))}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Direct videos in category (no subcategories) */
-                    category.videos && category.videos.length > 0 && (
-                      <div className="space-y-3">
-                        {category.videos.map((video) => (
-                          <div key={video._id} className="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h5 className="font-medium text-gray-800 mb-1">
-                                  {video.title}
-                                  {video.isFree && (
-                                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                      Free Sample
+                        )}
+
+                        {/* Subcategories */}
+                        {category.subcategories && category.subcategories.map((subcategory, subIndex) => (
+                          <div key={subIndex} className="border-t border-gray-200">
+                            <div className="bg-gray-25 px-6 py-2">
+                              <h5 className="font-medium text-gray-800">{subcategory.subcategoryName}</h5>
+                            </div>
+                            <div className="px-6 py-2">
+                              {subcategory.videos.map((video, videoIndex) => (
+                                <div
+                                  key={video._id}
+                                  onClick={() => handleVideoClick(video._id)}
+                                  className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${course.hasPurchased
+                                    ? 'hover:bg-blue-50 text-blue-600'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                  <div className="flex items-center">
+                                    <div className="mr-3">
+                                      {course.hasPurchased ? '▶️' : '🔒'}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">{video.title}</p>
+                                      <p className="text-sm text-gray-500">{video.duration}</p>
+                                    </div>
+                                  </div>
+                                  {!course.hasPurchased && (
+                                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                      Purchase Required
                                     </span>
                                   )}
-                                </h5>
-                                <p className="text-gray-600 text-sm mb-3">{video.description}</p>
-
-                                {/* Video Player or Lock Message */}
-                                {(video.isFree || hasPurchased) ? (
-                                  video.videoUrl ? (
-                                    <video controls className="w-full h-auto rounded-md max-w-md">
-                                      <source src={video.videoUrl} type="video/mp4" />
-                                      Your browser does not support the video tag.
-                                    </video>
-                                  ) : (
-                                    <p className="text-red-500 text-sm">Video URL not available.</p>
-                                  )
-                                ) : (
-                                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                                    <p className="text-yellow-700 text-sm flex items-center">
-                                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                      </svg>
-                                      Purchase the course to unlock this video
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         ))}
                       </div>
-                    )
-                  )}
+                    ))}
+                  </div>
+                ) : (
+                  // Legacy video structure
+                  <div className="space-y-2">
+                    {course.videos.map((video, index) => (
+                      <div
+                        key={video._id}
+                        onClick={() => handleVideoClick(video._id)}
+                        className={`flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer transition-colors ${course.hasPurchased
+                          ? 'hover:bg-blue-50 text-blue-600'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          }`}
+                      >
+                        <div className="flex items-center">
+                          <div className="mr-3">
+                            {course.hasPurchased ? '▶️' : '🔒'}
+                          </div>
+                          <div>
+                            <p className="font-medium">{video.title}</p>
+                            <p className="text-sm text-gray-500">{video.duration}</p>
+                          </div>
+                        </div>
+                        {!course.hasPurchased && (
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                            Purchase Required
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Purchase Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8">
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  {course.price === 0 ? 'FREE' : `₹${course.price}`}
+                </div>
+                <p className="text-gray-600">
+                  {course.price === 0 ? 'Free course' : 'One-time payment'}
+                </p>
+              </div>
+
+              {course.hasPurchased ? (
+                <div className="text-center">
+                  <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg mb-4">
+                    ✅ Course Purchased
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    You have full access to all course content.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={handlePurchase}
+                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  {course.price === 0 ? 'Get Free Access' : 'Purchase Course'}
+                </button>
+              )}
+
+              <div className="mt-6 space-y-3 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <span className="mr-2">📚</span>
+                  <span>Lifetime access</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-2">📱</span>
+                  <span>Mobile & desktop access</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-2">🎓</span>
+                  <span>Certificate of completion</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-2">💳</span>
+                  <span>Google Pay payment</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        ) : (
-          /* Fallback to Legacy Video Structure */
-          <>
-            <h2 className="text-3xl font-bold mb-4">Course Videos</h2>
-            {course.videos.length === 0 ? (
-              <p>No videos available for this course.</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {course.videos.map((video) => (
-                  <div key={video._id} className="border p-4 rounded-md shadow-sm">
-                    <h3 className="text-xl font-semibold mb-2">{video.title} {video.isFree && '(Free Sample)'}</h3>
-                    <p className="text-gray-600 mb-4">{video.description}</p>
-                    {(video.isFree || hasPurchased) ? (
-                      video.videoUrl ? (
-                        <video controls className="w-full h-auto rounded-md">
-                          <source src={video.videoUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <p className="text-red-500">Video URL not available.</p>
-                      )
-                    ) : (
-                      <p className="text-yellow-500">Purchase the course to unlock this video.</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+        </div>
       </div>
+
+      {/* Google Pay Modal */}
+      {course && (
+        <GooglePayModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          product={{
+            id: course._id,
+            title: course.title,
+            price: course.price,
+            type: 'course',
+            image: course.image
+          }}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 };
 
 export default SingleCoursePage;
-

@@ -7,7 +7,7 @@ const {
   getCourseById,
   updateCourse,
   deleteCourse,
-  uploadVideo,
+  addVideoToCourse,
   uploadVideoToContent,
   getAllCoursesPublic,
   getCourseByIdPublic,
@@ -37,13 +37,12 @@ router
   .put(protect, admin, updateCourse)
   .delete(protect, admin, deleteCourse);
 
-// Upload video to course (ADMIN ONLY)
+// Add video to course (ADMIN ONLY) - YouTube ID only
 router.post(
   "/admin/:id/videos",
   protect,
   admin,
-  upload.single("video"),
-  uploadVideo
+  addVideoToCourse
 );
 
 // Upload video to hierarchical content structure (ADMIN ONLY)

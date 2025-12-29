@@ -7,90 +7,85 @@ const OrderSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    // Legacy fields for backward compatibility
-    course: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-      ref: 'Course',
+    // Item details
+    itemType: {
+      type: String,
+      required: true,
+      enum: ['course', 'testSeries', 'ebook', 'studyMaterial', 'currentAffairs'],
     },
-    testSeries: {
+    itemId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: false,
-      ref: 'TestSeries',
+      required: true,
+      refPath: 'itemType',
     },
-    ebook: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-      ref: 'Ebook',
+    amount: {
+      type: Number,
+      required: true,
     },
-    // New flexible items array for multiple products
-    items: [{
-      course: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
-      },
-      testSeries: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'TestSeries',
-      },
-      ebook: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Ebook',
-      },
-      material: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'StudyMaterial',
-      },
-      currentAffairsPackage: { // NEW
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'CurrentAffairsPackage',
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        default: 1,
-      }
-    }],
+    // Manual Google Pay payment details
     paymentMethod: {
       type: String,
       required: true,
+      default: 'google_pay_manual',
     },
-    paymentResult: {
-      id: { type: String },
-      status: { type: String },
-      update_time: { type: String },
-      email_address: { type: String },
+    screenshotUrl: {
+      type: String,
+      required: false, // Will be set when user uploads screenshot
     },
-    taxPrice: {
-      type: Number,
+    status: {
+      type: String,
       required: true,
-      default: 0.0,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
     },
-    shippingPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
+    // Admin approval details
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
     },
-    totalPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
+    approvedAt: {
+      type: Date,
+      required: false,
     },
+    rejectionReason: {
+      type: String,
+      required: false,
+    },
+    // Legacy fields for backward compatibility (will be removed)
     isPaid: {
       type: Boolean,
-      required: true,
-      default: false,
+      default: function () {
+        return this.status === 'approved';
+      }
     },
     paidAt: {
       type: Date,
+      default: function () {
+        return this.status === 'approved' ? this.approvedAt : null;
+      }
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    // Virtual for dynamic refPath resolution
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+// Virtual to populate item based on itemType
+OrderSchema.virtual('item', {
+  refPath: 'itemType',
+  localField: 'itemId',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Index for efficient queries
+OrderSchema.index({ user: 1, status: 1 });
+OrderSchema.index({ status: 1, createdAt: -1 });
+OrderSchema.index({ itemType: 1, itemId: 1 });
 
 const Order = mongoose.model('Order', OrderSchema);
 

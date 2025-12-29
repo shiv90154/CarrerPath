@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 // @access  Private/Admin
 const getAdminStats = asyncHandler(async (req, res) => {
     try {
-        console.log('Fetching admin stats...');
+        // Fetching admin stats
 
         // Get basic counts
         const totalStudents = await User.countDocuments({ role: 'student' });
@@ -28,74 +28,72 @@ const getAdminStats = asyncHandler(async (req, res) => {
         const totalTestSeries = await TestSeries.countDocuments({});
         const totalEbooks = await Ebook.countDocuments({});
 
-        console.log('Basic counts:', {
-            totalStudents,
-            totalCourses,
-            totalTestSeries,
+        // Basic counts calculated
+        totalTestSeries,
             totalEbooks
-        });
+    });
 
-        // Get orders and revenue
-        const orders = await Order.find({ isPaid: true }).lean();
-        const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+// Get orders and revenue
+const orders = await Order.find({ isPaid: true }).lean();
+const totalOrders = orders.length;
+const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
-        console.log('Orders and revenue:', { totalOrders, totalRevenue });
+// Orders and revenue calculated
 
-        // Get recent orders with populated data
-        const recentOrdersData = await Order.find({ isPaid: true })
-            .populate('user', 'name email')
-            .populate('course', 'title')
-            .populate('testSeries', 'title')
-            .populate('ebook', 'title')
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .lean();
+// Get recent orders with populated data
+const recentOrdersData = await Order.find({ isPaid: true })
+    .populate('user', 'name email')
+    .populate('course', 'title')
+    .populate('testSeries', 'title')
+    .populate('ebook', 'title')
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
 
-        const recentOrders = recentOrdersData.map(order => ({
-            _id: order._id,
-            user: {
-                name: order.user?.name || 'Unknown User',
-                email: order.user?.email || 'No Email'
-            },
-            totalPrice: order.totalPrice || 0,
-            createdAt: order.createdAt,
-            productName: order.course?.title ||
-                order.testSeries?.title ||
-                order.ebook?.title || 'Unknown Product'
-        }));
+const recentOrders = recentOrdersData.map(order => ({
+    _id: order._id,
+    user: {
+        name: order.user?.name || 'Unknown User',
+        email: order.user?.email || 'No Email'
+    },
+    totalPrice: order.totalPrice || 0,
+    createdAt: order.createdAt,
+    productName: order.course?.title ||
+        order.testSeries?.title ||
+        order.ebook?.title || 'Unknown Product'
+}));
 
-        // Get recent registrations (using lean to avoid virtual field issues)
-        const recentRegistrations = await User.find({ role: 'student' })
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .select('name email createdAt')
-            .lean();
+// Get recent registrations (using lean to avoid virtual field issues)
+const recentRegistrations = await User.find({ role: 'student' })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select('name email createdAt')
+    .lean();
 
-        console.log('Sending response with stats');
+// Sending response with stats
 
-        const response = {
-            totalStudents,
-            totalCourses,
-            totalTestSeries,
-            totalEbooks,
-            totalOrders,
-            totalRevenue,
-            recentOrders,
-            monthlyRevenue: [], // Empty for now
-            recentRegistrations,
-            topCourses: [] // Empty for now
-        };
+const response = {
+    totalStudents,
+    totalCourses,
+    totalTestSeries,
+    totalEbooks,
+    totalOrders,
+    totalRevenue,
+    recentOrders,
+    monthlyRevenue: [], // Empty for now
+    recentRegistrations,
+    topCourses: [] // Empty for now
+};
 
-        res.json(response);
+res.json(response);
 
     } catch (error) {
-        console.error('Admin stats error:', error);
-        res.status(500).json({
-            message: 'Failed to fetch admin statistics',
-            error: error.message
-        });
-    }
+    console.error('Admin stats error:', error);
+    res.status(500).json({
+        message: 'Failed to fetch admin statistics',
+        error: error.message
+    });
+}
 });
 
 // @desc    Get all users (Admin only)

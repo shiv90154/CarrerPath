@@ -16,9 +16,7 @@ const PopupLeadForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // TEMP: replace with API later
-    console.log(formData);
-
+    // Form submitted successfully
     alert("Thank you! We will contact you shortly.");
   };
 

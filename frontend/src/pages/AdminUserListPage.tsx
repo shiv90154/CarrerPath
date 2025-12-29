@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import UserManagementDebug from '../components/UserManagementDebug';
 
 interface User {
     _id: string;
@@ -105,20 +104,20 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 lg:p-6">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-2xl font-bold">
+                        <div className="flex items-center space-x-3 lg:space-x-4">
+                            <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-lg lg:text-2xl font-bold">
                                 {user.avatar ? (
-                                    <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-full object-cover" />
+                                    <img src={user.avatar} alt={user.name} className="w-12 h-12 lg:w-16 lg:h-16 rounded-full object-cover" />
                                 ) : (
                                     user.name.charAt(0).toUpperCase()
                                 )}
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold">{user.name}</h2>
-                                <p className="text-blue-100">{user.email}</p>
-                                <div className="flex items-center space-x-4 mt-2">
+                                <h2 className="text-xl lg:text-2xl font-bold">{user.name}</h2>
+                                <p className="text-blue-100 text-sm lg:text-base">{user.email}</p>
+                                <div className="flex items-center space-x-2 lg:space-x-4 mt-2">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.role === 'admin' ? 'bg-red-500 text-white' :
                                         user.role === 'instructor' ? 'bg-yellow-500 text-white' :
                                             'bg-green-500 text-white'
@@ -143,7 +142,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
 
                 {/* Tabs */}
                 <div className="border-b border-gray-200">
-                    <nav className="flex space-x-8 px-6">
+                    <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -161,7 +160,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
                 </div>
 
                 {/* Content */}
-                <div className="p-6 max-h-96 overflow-y-auto">
+                <div className="p-4 lg:p-6 max-h-96 overflow-y-auto">
                     {activeTab === 'profile' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -345,7 +344,6 @@ const AdminUserListPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [showDebug, setShowDebug] = useState(false);
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalAdmins: 0,
@@ -360,22 +358,13 @@ const AdminUserListPage: React.FC = () => {
 
     const fetchUsers = async () => {
         if (!user?.token) {
-            console.log('❌ No user token available');
+            // No user token available
             setError('Authentication required');
             setLoading(false);
             return;
         }
 
-        console.log('🔍 Fetching users with params:', {
-            page: currentPage,
-            limit: 10,
-            search: searchTerm,
-            role: roleFilter,
-            status: statusFilter,
-            userRole: user.role,
-            hasToken: !!user.token
-        });
-
+        // Fetching users with params
         setLoading(true);
         try {
             const params = new URLSearchParams({
@@ -386,35 +375,19 @@ const AdminUserListPage: React.FC = () => {
                 status: statusFilter
             });
 
-            console.log('📡 Making API call to:', `https://carrerpath-m48v.onrender.com/api/admin/users?${params}`);
-
+            // Making API call
             const { data } = await axios.get<UsersResponse>(
                 `https://carrerpath-m48v.onrender.com/api/admin/users?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
-            console.log('✅ Users fetched successfully:', {
-                userCount: data.users.length,
-                totalUsers: data.total,
-                stats: data.stats
-            });
-
+            // Users fetched successfully
             setUsers(data.users);
             setTotalPages(data.totalPages);
             setStats(data.stats);
             setError(null);
         } catch (err: any) {
-            console.error('❌ Error fetching users:', {
-                message: err.message,
-                status: err.response?.status,
-                statusText: err.response?.statusText,
-                data: err.response?.data,
-                config: {
-                    url: err.config?.url,
-                    method: err.config?.method,
-                    headers: err.config?.headers
-                }
-            });
+            // Error fetching users
             setError(`Failed to fetch users: ${err.response?.data?.message || err.message}`);
         } finally {
             setLoading(false);
@@ -450,63 +423,52 @@ const AdminUserListPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
-                <div className="container mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management</h1>
                             <p className="text-gray-600 mt-1">Manage and monitor all users</p>
                         </div>
                         <Link
                             to="/admin/dashboard"
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-3"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center"
                         >
                             Back to Dashboard
                         </Link>
-                        <button
-                            onClick={() => setShowDebug(!showDebug)}
-                            className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
-                        >
-                            {showDebug ? 'Hide Debug' : 'Show Debug'}
-                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Debug Panel */}
-            {showDebug && (
-                <div className="container mx-auto px-4 py-6">
-                    <UserManagementDebug />
-                </div>
-            )}
+
 
             {/* Stats Cards */}
-            <div className="container mx-auto px-4 py-6">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="text-2xl font-bold text-blue-600">{stats.totalStudents}</div>
-                        <div className="text-sm text-gray-600">Students</div>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
+                    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm">
+                        <div className="text-xl lg:text-2xl font-bold text-blue-600">{stats.totalStudents}</div>
+                        <div className="text-xs lg:text-sm text-gray-600">Students</div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="text-2xl font-bold text-red-600">{stats.totalAdmins}</div>
-                        <div className="text-sm text-gray-600">Admins</div>
+                    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm">
+                        <div className="text-xl lg:text-2xl font-bold text-red-600">{stats.totalAdmins}</div>
+                        <div className="text-xs lg:text-sm text-gray-600">Admins</div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="text-2xl font-bold text-yellow-600">{stats.totalInstructors}</div>
-                        <div className="text-sm text-gray-600">Instructors</div>
+                    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm">
+                        <div className="text-xl lg:text-2xl font-bold text-yellow-600">{stats.totalInstructors}</div>
+                        <div className="text-xs lg:text-sm text-gray-600">Instructors</div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="text-2xl font-bold text-green-600">{stats.activeUsers}</div>
-                        <div className="text-sm text-gray-600">Active Users</div>
+                    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm">
+                        <div className="text-xl lg:text-2xl font-bold text-green-600">{stats.activeUsers}</div>
+                        <div className="text-xs lg:text-sm text-gray-600">Active Users</div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="text-2xl font-bold text-purple-600">{stats.newUsersThisMonth}</div>
-                        <div className="text-sm text-gray-600">New This Month</div>
+                    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm col-span-2 sm:col-span-1">
+                        <div className="text-xl lg:text-2xl font-bold text-purple-600">{stats.newUsersThisMonth}</div>
+                        <div className="text-xs lg:text-sm text-gray-600">New This Month</div>
                     </div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
                             <input
@@ -579,7 +541,65 @@ const AdminUserListPage: React.FC = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            {/* Mobile Card View */}
+                            <div className="block lg:hidden space-y-4">
+                                {users.map((userData) => (
+                                    <div key={userData._id} className="bg-white border border-gray-200 rounded-lg p-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                    {userData.avatar ? (
+                                                        <img
+                                                            src={userData.avatar}
+                                                            alt={userData.name}
+                                                            className="w-10 h-10 rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        userData.name.charAt(0).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {userData.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 flex items-center">
+                                                        {userData.email}
+                                                        {userData.emailVerified && (
+                                                            <span className="ml-1 text-green-600">✓</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setSelectedUser(userData)}
+                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                            >
+                                                View
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs">
+                                            <div className="flex items-center space-x-2">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userData.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                                    userData.role === 'instructor' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-green-100 text-green-800'
+                                                    }`}>
+                                                    {userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}
+                                                </span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userData.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {userData.isActive ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                            <div className="text-gray-500">
+                                                Joined: {formatDate(userData.createdAt)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden lg:block overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>

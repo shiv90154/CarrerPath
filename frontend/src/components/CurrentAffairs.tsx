@@ -132,10 +132,7 @@ const CurrentAffairsPage: React.FC = () => {
   };
 
   const toggleExpand = (id: string) => {
-    console.log('Toggling expand for ID:', id);
-    console.log('Current expandedId:', expandedId);
     setExpandedId(expandedId === id ? null : id);
-    console.log('New expandedId will be:', expandedId === id ? null : id);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -441,14 +438,14 @@ const CurrentAffairsPage: React.FC = () => {
                         )}
                       </button>
 
-                   
+
                     </div>
 
                     {/* Detailed Content (Collapsible) */}
                     {expandedId === affair._id && (
                       <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
                         <div className="prose prose-sm max-w-none text-[#111827] font-inter">
-                    
+
 
                           {/* Fallback: Render as HTML if ReactMarkdown fails */}
                           <div className="mb-4">

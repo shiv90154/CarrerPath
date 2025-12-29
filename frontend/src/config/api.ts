@@ -13,14 +13,14 @@ export const API_BASE_URL = (() => {
   return 'https://carrerpath-m48v.onrender.com';
 })();
 
-// Razorpay Key with fallback
-export const RAZORPAY_KEY_ID = (() => {
-  const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
-  if (key && key !== 'your_razorpay_key_id_here') {
-    return key;
-  }
-  return 'rzp_test_fallback_key';
-})();
+// Helper function to build API URLs
+export const buildApiUrl = (endpoint: string): string => {
+  return `${API_BASE_URL}${endpoint}`;
+};
+
+// Google Pay Configuration
+export const GOOGLE_PAY_NUMBER = import.meta.env.VITE_GOOGLE_PAY_NUMBER || '9876543210';
+export const GOOGLE_PAY_UPI_ID = import.meta.env.VITE_GOOGLE_PAY_UPI_ID || 'merchant@paytm';
 
 // API Endpoints
 export const API_ENDPOINTS = {
@@ -36,7 +36,11 @@ export const API_ENDPOINTS = {
   // Courses
   COURSES: '/api/courses',
   COURSE_DETAIL: (id: string) => `/api/courses/${id}`,
-  COURSE_VIDEO: (courseId: string, videoId: string) => `/api/courses/${courseId}/videos/${videoId}`,
+  COURSE_ACCESS: (id: string) => `/api/courses/${id}/access`,
+  
+  // Videos (Secure)
+  VIDEO_ACCESS: (videoId: string) => `/api/videos/${videoId}/access`,
+  COURSE_VIDEOS: (courseId: string) => `/api/videos/course/${courseId}`,
 
   // Test Series
   TEST_SERIES: '/api/testseries',
@@ -56,10 +60,14 @@ export const API_ENDPOINTS = {
   CURRENT_AFFAIRS_ADMIN: '/api/current-affairs/admin/all',
   CURRENT_AFFAIRS_STATS: '/api/current-affairs/stats/summary',
 
-  // Payments
-  PAYMENT_ORDERS: '/api/payments/orders',
-  PAYMENT_VERIFY: '/api/payments/verify',
-  MY_ORDERS: '/api/payments/myorders',
+  // Manual Google Pay Payments
+  CREATE_ORDER: '/api/payments/create-order',
+  UPLOAD_SCREENSHOT: (orderId: string) => `/api/payments/upload-screenshot/${orderId}`,
+  MY_ORDERS: '/api/payments/my-orders',
+  ADMIN_PENDING_PAYMENTS: '/api/payments/admin/pending',
+  ADMIN_ALL_PAYMENTS: '/api/payments/admin/all',
+  ADMIN_APPROVE_PAYMENT: (orderId: string) => `/api/payments/admin/approve/${orderId}`,
+  ADMIN_REJECT_PAYMENT: (orderId: string) => `/api/payments/admin/reject/${orderId}`,
 
   // Admin
   ADMIN_USERS: '/api/admin/users',
@@ -83,11 +91,6 @@ export const API_ENDPOINTS = {
   NOTICES: '/api/notices',
   NOTICES_ADMIN: '/api/notices/admin/all',
   NOTICES_STATS: '/api/notices/admin/stats',
-};
-
-// Helper function to build full URL
-export const buildApiUrl = (endpoint: string): string => {
-  return `${API_BASE_URL}${endpoint}`;
 };
 
 // Axios instance with base configuration

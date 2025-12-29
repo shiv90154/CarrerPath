@@ -109,7 +109,7 @@ const updateStudyMaterial = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`study-material-covers/${publicId}`);
       } catch (error) {
-        console.log('Error deleting old cover:', error);
+        // Error deleting old cover image
       }
     }
 
@@ -130,7 +130,7 @@ const updateStudyMaterial = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`study-materials/${publicId}`);
       } catch (error) {
-        console.log('Error deleting old file:', error);
+        // Error deleting old file
       }
     }
 
@@ -163,7 +163,7 @@ const deleteStudyMaterial = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`study-materials/${filePublicId}`);
       } catch (error) {
-        console.log('Error deleting material file:', error);
+        // Error deleting material file
       }
     }
 
@@ -172,7 +172,7 @@ const deleteStudyMaterial = asyncHandler(async (req, res) => {
       try {
         await cloudinary.uploader.destroy(`study-material-covers/${coverPublicId}`);
       } catch (error) {
-        console.log('Error deleting cover image:', error);
+        // Error deleting cover image
       }
     }
 

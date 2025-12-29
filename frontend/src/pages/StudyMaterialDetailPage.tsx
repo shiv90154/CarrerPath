@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import PaymentModal from '../components/PaymentModal';
+import GooglePayModal from '../components/GooglePayModal';
 import {
   FileText, Calendar, Download, Globe, BookOpen, User,
   CheckCircle, Lock, Tag, Award, Clock, ArrowLeft
@@ -389,9 +389,9 @@ const StudyMaterialDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Payment Modal */}
+      {/* Google Pay Modal */}
       {showPaymentModal && material && (
-        <PaymentModal
+        <GooglePayModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           product={{

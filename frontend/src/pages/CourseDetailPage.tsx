@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
-import PaymentModal from '../components/PaymentModal';
+import GooglePayModal from '../components/GooglePayModal';
 import {
     Play,
     Clock,
@@ -853,9 +853,9 @@ const CourseDetailPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Payment Modal */}
+            {/* Google Pay Modal */}
             {course && (
-                <PaymentModal
+                <GooglePayModal
                     isOpen={paymentModalOpen}
                     onClose={() => setPaymentModalOpen(false)}
                     product={{

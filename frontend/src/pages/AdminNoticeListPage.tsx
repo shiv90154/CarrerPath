@@ -76,20 +76,13 @@ const AdminNoticeListPage: React.FC = () => {
 
     const fetchNotices = async () => {
         if (!user?.token) {
-            console.log('❌ No user token available for notices');
+            // No user token available for notices
             setError('Authentication required');
             setLoading(false);
             return;
         }
 
-        console.log('🔍 Fetching notices with params:', {
-            page: currentPage,
-            limit: 10,
-            search: searchTerm,
-            filters,
-            userRole: user.role,
-            hasToken: !!user.token
-        });
+        // Fetching notices with params
 
         try {
             setLoading(true);
@@ -100,25 +93,20 @@ const AdminNoticeListPage: React.FC = () => {
                 ...filters
             });
 
-            console.log('📡 Making API call to:', `https://carrerpath-m48v.onrender.com/api/notices/admin/all?${params}`);
+            // Making API call
 
             const { data } = await axios.get<NoticesResponse>(
                 `https://carrerpath-m48v.onrender.com/api/notices/admin/all?${params}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
-            console.log('✅ Notices API response:', {
-                success: data.success,
-                noticeCount: data.data?.length || 0,
-                totalPages: data.pagination?.pages || 0,
-                total: data.pagination?.total || 0
-            });
+            // Notices API response received
 
             if (data.success) {
                 setNotices(data.data || []);
                 setTotalPages(data.pagination?.pages || 1);
             } else {
-                console.log('❌ API returned success: false');
+                // API returned success: false
                 setError('Failed to fetch notices - API returned error');
             }
             setError(null);
@@ -142,26 +130,23 @@ const AdminNoticeListPage: React.FC = () => {
 
     const fetchStats = async () => {
         if (!user?.token) {
-            console.log('❌ No user token available for stats');
+            // No user token available for stats
             return;
         }
 
         try {
-            console.log('📊 Fetching notice statistics...');
+            // Fetching notice statistics
             const { data } = await axios.get(
                 'https://carrerpath-m48v.onrender.com/api/notices/admin/stats',
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
-            console.log('✅ Stats API response:', {
-                success: data.success,
-                stats: data.data
-            });
+            // Stats API response received
 
             if (data.success) {
                 setStats(data.data);
             } else {
-                console.log('❌ Stats API returned success: false');
+                // Stats API returned success: false
             }
         } catch (err: any) {
             console.error('❌ Error fetching stats:', {

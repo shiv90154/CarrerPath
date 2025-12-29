@@ -306,7 +306,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Welcome email sent to ${userEmail}`);
+      // Welcome email sent successfully
       return { success: true, message: 'Welcome email sent successfully' };
     } catch (error) {
       console.error('Error sending welcome email:', error);
@@ -330,7 +330,7 @@ const emailService = {
       );
 
       await Promise.all(emailPromises);
-      console.log(`New course notification sent to ${userEmails.length} users`);
+      // Course notification sent successfully
       return { success: true, message: 'Course notification sent successfully' };
     } catch (error) {
       console.error('Error sending course notification:', error);
@@ -354,7 +354,7 @@ const emailService = {
       );
 
       await Promise.all(emailPromises);
-      console.log(`Test series notification sent to ${userEmails.length} users`);
+      // Test series notification sent successfully
       return { success: true, message: 'Test series notification sent successfully' };
     } catch (error) {
       console.error('Error sending test series notification:', error);
@@ -375,7 +375,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Enrollment confirmation sent to ${userEmail}`);
+      // Enrollment confirmation sent successfully
       return { success: true, message: 'Enrollment confirmation sent successfully' };
     } catch (error) {
       console.error('Error sending enrollment confirmation:', error);
@@ -396,7 +396,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Payment confirmation sent to ${userEmail}`);
+      // Payment confirmation sent successfully
       return { success: true, message: 'Payment confirmation sent successfully' };
     } catch (error) {
       console.error('Error sending payment confirmation:', error);
@@ -417,7 +417,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Test completion notification sent to ${userEmail}`);
+      // Test completion notification sent successfully
       return { success: true, message: 'Test completion notification sent successfully' };
     } catch (error) {
       console.error('Error sending test completion notification:', error);
@@ -438,7 +438,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Course completion certificate sent to ${userEmail}`);
+      // Course completion certificate sent successfully
       return { success: true, message: 'Course completion certificate sent successfully' };
     } catch (error) {
       console.error('Error sending course completion certificate:', error);
@@ -459,7 +459,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Password reset email sent to ${userEmail}`);
+      // Password reset email sent successfully
       return { success: true, message: 'Password reset email sent successfully' };
     } catch (error) {
       console.error('Error sending password reset email:', error);
@@ -481,7 +481,7 @@ const emailService = {
         html: template.html
       });
 
-      console.log(`Admin notification sent for new user: ${userName}`);
+      // Admin notification sent successfully
       return { success: true, message: 'Admin notification sent successfully' };
     } catch (error) {
       console.error('Error sending admin notification:', error);
@@ -504,7 +504,7 @@ const emailService = {
       );
 
       await Promise.all(emailPromises);
-      console.log(`Bulk email sent to ${userEmails.length} users`);
+      // Bulk email sent successfully
       return { success: true, message: 'Bulk email sent successfully' };
     } catch (error) {
       console.error('Error sending bulk email:', error);

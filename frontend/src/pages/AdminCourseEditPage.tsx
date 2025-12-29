@@ -108,7 +108,7 @@ const AdminCourseEditPage: React.FC = () => {
 
           // If course has no content structure but has videos, suggest creating categories
           if ((!data.content || data.content.length === 0) && data.videos && data.videos.length > 0) {
-            console.log('Course has videos but no category structure. Consider adding categories for better organization.');
+            // Course has videos but no category structure - consider adding categories for better organization
           }
 
           setLoading(false);

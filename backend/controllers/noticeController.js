@@ -190,8 +190,7 @@ exports.togglePublishStatus = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
     try {
-        console.log('📋 Admin fetching all notices...');
-        console.log('User:', req.user?.name, 'Role:', req.user?.role);
+        // Admin fetching all notices
 
         const {
             page = 1,
@@ -203,7 +202,7 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
             isPublished
         } = req.query;
 
-        console.log('Query params:', { page, limit, category, badge, targetAudience, search, isPublished });
+        // Query params received
 
         const query = {};
 
@@ -223,7 +222,7 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
             ];
         }
 
-        console.log('Final query:', JSON.stringify(query));
+        // Query built
 
         const notices = await Notice.find(query)
             .sort({ priority: -1, publishDate: -1, createdAt: -1 })
@@ -234,7 +233,7 @@ exports.getAllNoticesAdmin = asyncHandler(async (req, res) => {
 
         const total = await Notice.countDocuments(query);
 
-        console.log(`✅ Found ${notices.length} notices out of ${total} total`);
+        // Notices fetched successfully
 
         res.json({
             success: true,
@@ -349,7 +348,7 @@ exports.getNoticeById = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 exports.getStatistics = asyncHandler(async (req, res) => {
     try {
-        console.log('📊 Admin fetching notice statistics...');
+        // Admin fetching notice statistics
 
         const total = await Notice.countDocuments();
         const published = await Notice.countDocuments({ isPublished: true });
@@ -358,7 +357,7 @@ exports.getStatistics = asyncHandler(async (req, res) => {
             expiryDate: { $lt: new Date() }
         });
 
-        console.log('Basic stats:', { total, published, unpublished, expired });
+        // Basic stats calculated
 
         // Category-wise count
         const categoryStats = await Notice.aggregate([
@@ -385,7 +384,7 @@ exports.getStatistics = asyncHandler(async (req, res) => {
             { $sort: { count: -1 } }
         ]);
 
-        console.log('✅ Statistics fetched successfully');
+        // Statistics fetched successfully
 
         res.json({
             success: true,

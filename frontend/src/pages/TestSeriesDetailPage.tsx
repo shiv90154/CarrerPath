@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import PaymentModal from '../components/PaymentModal';
+import GooglePayModal from '../components/GooglePayModal';
 
 interface Test {
     _id: string;
@@ -777,9 +777,9 @@ const TestSeriesDetailPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Payment Modal */}
+            {/* Google Pay Modal */}
             {showPaymentModal && testSeries && (
-                <PaymentModal
+                <GooglePayModal
                     isOpen={showPaymentModal}
                     onClose={() => setShowPaymentModal(false)}
                     product={{
