@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import VideoUploadModal from '../components/VideoUploadModal';
+import YouTubeVideoModal from '../components/YouTubeVideoModal';
 
 interface VideoData {
   _id?: string;
@@ -70,6 +71,7 @@ const AdminCourseEditPage: React.FC = () => {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'content'>('basic');
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showYouTubeModal, setShowYouTubeModal] = useState(false);
   const [videoModalContext, setVideoModalContext] = useState<{
     categoryIndex?: number;
     subcategoryIndex?: number;
@@ -170,35 +172,6 @@ const AdminCourseEditPage: React.FC = () => {
     }
   };
 
-  const handleVideoUpload = async (courseId: string, videoData: VideoData) => {
-    if (!user || !videoData.videoFile) return;
-
-    setUploadingVideo(true);
-    const formData = new FormData();
-    formData.append('title', videoData.title);
-    formData.append('description', videoData.description);
-    formData.append('isFree', String(videoData.isFree));
-    formData.append('video', videoData.videoFile);
-
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      await axios.post(`https://carrerpath-m48v.onrender.com/api/courses/admin/${courseId}/videos`, formData, config);
-      alert('Video uploaded successfully');
-      // Refresh course data
-      window.location.reload();
-    } catch (err: any) {
-      console.error(err);
-      alert(err.response?.data?.message || 'Failed to upload video');
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
   const openVideoModal = (categoryIndex?: number, subcategoryIndex?: number) => {
     // Validate categoryIndex before opening modal
     if (categoryIndex !== undefined) {
@@ -236,17 +209,6 @@ const AdminCourseEditPage: React.FC = () => {
     if (id) {
       window.location.reload();
     }
-  };
-
-  const handleAddVideoField = () => {
-    setVideos([...videos, { title: '', description: '', isFree: false, videoFile: null }]);
-  };
-
-  const handleVideoChange = (index: number, field: keyof VideoData, value: string | boolean | File | null) => {
-    const newVideos = [...videos];
-    // @ts-ignore
-    newVideos[index][field] = value;
-    setVideos(newVideos);
   };
 
   // Hierarchical Content Management Functions
@@ -618,13 +580,25 @@ const AdminCourseEditPage: React.FC = () => {
                               <div className="ml-4">
                                 <div className="flex justify-between items-center mb-2">
                                   <h6 className="text-sm font-medium text-gray-600">Videos in this Subcategory</h6>
-                                  <button
-                                    type="button"
-                                    onClick={() => openVideoModal(categoryIndex, subcategoryIndex)}
-                                    className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs"
-                                  >
-                                    + Upload Video
-                                  </button>
+                                  <div className="flex space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setVideoModalContext({ categoryIndex, subcategoryIndex });
+                                        setShowYouTubeModal(true);
+                                      }}
+                                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
+                                    >
+                                      + YouTube Video
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => openVideoModal(categoryIndex, subcategoryIndex)}
+                                      className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs"
+                                    >
+                                      + Upload File
+                                    </button>
+                                  </div>
                                 </div>
 
                                 {subcategory.videos.map((video, videoIndex) => (
@@ -681,61 +655,73 @@ const AdminCourseEditPage: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="text-md font-semibold text-gray-700">Direct Videos (No Subcategory)</h4>
-                            <button
-                              type="button"
-                              onClick={() => openVideoModal(categoryIndex)}
-                              className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded text-sm"
-                            >
-                              + Upload Video
-                            </button>
-                          </div>
-
-                          {category.videos.map((video, videoIndex) => (
-                            <div key={videoIndex} className="border border-gray-200 rounded p-3 mb-3 bg-orange-50">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-medium text-gray-600">Direct Video {videoIndex + 1}</span>
-                                <button
-                                  onClick={() => removeCategoryVideo(categoryIndex, videoIndex)}
-                                  className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                <input
-                                  type="text"
-                                  value={video.title}
-                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'title', e.target.value)}
-                                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                  placeholder="Video title"
-                                />
-                                <input
-                                  type="text"
-                                  value={video.description}
-                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'description', e.target.value)}
-                                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                  placeholder="Video description"
-                                />
-                              </div>
-                              <div className="flex items-center space-x-4">
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    checked={video.isFree}
-                                    onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'isFree', e.target.checked)}
-                                    className="form-checkbox h-4 w-4 text-blue-600"
-                                  />
-                                  <span className="ml-2 text-sm text-gray-700">Free Sample</span>
-                                </label>
-                                <input
-                                  type="file"
-                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
-                                  className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                                />
-                              </div>
+                            <div className="flex space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setVideoModalContext({ categoryIndex });
+                                  setShowYouTubeModal(true);
+                                }}
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                              >
+                                + YouTube Video
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openVideoModal(categoryIndex)}
+                                className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded text-sm"
+                              >
+                                + Upload File
+                              </button>
                             </div>
-                          ))}
+                          </div>
                         </div>
+
+                        {category.videos.map((video, videoIndex) => (
+                          <div key={videoIndex} className="border border-gray-200 rounded p-3 mb-3 bg-orange-50">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium text-gray-600">Direct Video {videoIndex + 1}</span>
+                              <button
+                                onClick={() => removeCategoryVideo(categoryIndex, videoIndex)}
+                                className="bg-red-400 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                              <input
+                                type="text"
+                                value={video.title}
+                                onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'title', e.target.value)}
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                placeholder="Video title"
+                              />
+                              <input
+                                type="text"
+                                value={video.description}
+                                onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'description', e.target.value)}
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                placeholder="Video description"
+                              />
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={video.isFree}
+                                  onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'isFree', e.target.checked)}
+                                  className="form-checkbox h-4 w-4 text-blue-600"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Free Sample</span>
+                              </label>
+                              <input
+                                type="file"
+                                onChange={(e) => updateCategoryVideo(categoryIndex, videoIndex, 'videoFile', e.target.files ? e.target.files[0] : null)}
+                                className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -755,44 +741,6 @@ const AdminCourseEditPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Legacy Video Management (for backward compatibility) */}
-      {
-        id && videos.length > 0 && (
-          <div className="bg-white shadow-lg rounded-lg p-8">
-            <h2 className="text-3xl font-bold mb-4">Legacy Videos (Backward Compatibility)</h2>
-            <p className="text-gray-600 mb-4">These are videos from the old structure. Consider organizing them into the new hierarchical structure above.</p>
-            {videos.map((video, index) => (
-              <div key={index} className="border p-4 rounded-md mb-4 bg-gray-50">
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Video Title</label>
-                  <input type="text" value={video.title} onChange={(e) => handleVideoChange(index, 'title', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Video Description</label>
-                  <textarea value={video.description} onChange={(e) => handleVideoChange(index, 'description', e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows={3}></textarea>
-                </div>
-                <div className="mb-4">
-                  <label className="inline-flex items-center">
-                    <input type="checkbox" checked={video.isFree} onChange={(e) => handleVideoChange(index, 'isFree', e.target.checked)} className="form-checkbox" />
-                    <span className="ml-2 text-gray-700">Is Free Sample?</span>
-                  </label>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Upload Video File</label>
-                  <input type="file" onChange={(e) => handleVideoChange(index, 'videoFile', e.target.files ? e.target.files[0] : null)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                </div>
-                <button type="button" onClick={() => handleVideoUpload(id, video)} className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={uploadingVideo}>
-                  {uploadingVideo ? 'Uploading...' : 'Upload Video'}
-                </button>
-              </div>
-            ))}
-            <button type="button" onClick={handleAddVideoField} className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
-              Add New Video Field
-            </button>
-          </div>
-        )
-      }
-
       {/* Video Upload Modal */}
       <VideoUploadModal
         isOpen={showVideoModal}
@@ -802,7 +750,16 @@ const AdminCourseEditPage: React.FC = () => {
         subcategoryIndex={videoModalContext.subcategoryIndex}
         onUploadSuccess={handleVideoUploadSuccess}
       />
-    </div >
+
+      <YouTubeVideoModal
+        isOpen={showYouTubeModal}
+        onClose={() => setShowYouTubeModal(false)}
+        courseId={id || ''}
+        categoryIndex={videoModalContext.categoryIndex}
+        subcategoryIndex={videoModalContext.subcategoryIndex}
+        onUploadSuccess={handleVideoUploadSuccess}
+      />
+    </div>
   );
 };
 

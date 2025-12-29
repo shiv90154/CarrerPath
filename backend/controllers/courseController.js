@@ -489,6 +489,7 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
   const {
     title,
     description,
+    youtubeVideoId,
     duration,
     order,
     isFree,
@@ -507,101 +508,121 @@ const uploadVideoToContent = asyncHandler(async (req, res) => {
   }
 
   // Course content structure validated
-  name: cat ? cat.categoryName : 'null/undefined',
-    subcategoriesCount: cat && cat.subcategories ? cat.subcategories.length : 0
-})) : 'no content'
-  });
 
-if (!req.file) {
-  res.status(400);
-  throw new Error("No video file uploaded");
-}
+  // Check if this is a YouTube video or file upload
+  const isYouTubeVideo = youtubeVideoId && youtubeVideoId.trim();
+  const isFileUpload = req.file;
 
-try {
-  // Upload to Cloudinary
-  const result = await cloudinary.uploader.upload(req.file.path, {
-    resource_type: "video",
-    folder: `institute-website/courses/${course._id}/videos`,
-    transformation: [
-      { quality: "auto" },
-      { fetch_format: "auto" }
-    ]
-  });
+  if (!isYouTubeVideo && !isFileUpload) {
+    res.status(400);
+    throw new Error("Either YouTube video ID or video file is required");
+  }
 
-  // Clean up temp file asynchronously
-  fs.unlink(req.file.path, (err) => {
-    if (err) console.error('Error deleting temp file:', err);
-  });
+  try {
+    let videoData = {
+      title,
+      description,
+      duration: duration || '0:00',
+      order: order || 1,
+      isFree: isFree === "true" || isFree === true,
+      isPreview: isPreview === "true" || isPreview === true,
+      course: courseId,
+    };
 
-  // Create video document
-  const video = new Video({
-    title,
-    description,
-    videoUrl: result.secure_url,
-    thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, ".jpg"),
-    duration: duration || '0:00',
-    order: order || 1,
-    isFree: isFree === "true" || isFree === true,
-    isPreview: isPreview === "true" || isPreview === true,
-    course: courseId,
-  });
-
-  const createdVideo = await video.save();
-
-  // Add video to hierarchical content structure
-  if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
-    const catIndex = parseInt(categoryIndex);
-
-    // Validate category index
-    if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
-      res.status(400);
-      throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
-    }
-
-    if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
-      const subIndex = parseInt(subcategoryIndex);
-
-      // Validate subcategory index
-      if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
-        subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
+    if (isYouTubeVideo) {
+      // Handle YouTube video
+      if (youtubeVideoId.length !== 11) {
         res.status(400);
-        throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
+        throw new Error("Invalid YouTube video ID. Must be 11 characters long.");
       }
-
-      // Add to subcategory
-      course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
+      videoData.youtubeVideoId = youtubeVideoId;
     } else {
-      // Add to category directly
-      if (!course.content[catIndex].videos) {
-        course.content[catIndex].videos = [];
-      }
-      course.content[catIndex].videos.push(createdVideo._id);
+      // Handle file upload
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "video",
+        folder: `institute-website/courses/${course._id}/videos`,
+        transformation: [
+          { quality: "auto" },
+          { fetch_format: "auto" }
+        ]
+      });
+
+      // Clean up temp file asynchronously
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting temp file:', err);
+      });
+
+      videoData.videoUrl = result.secure_url;
+      videoData.thumbnailUrl = result.secure_url.replace(/\.[^/.]+$/, ".jpg");
     }
-  } else {
-    // Add to legacy videos array
-    course.videos.push(createdVideo._id);
-  }
 
-  await course.save();
+    // Create video document
+    const video = new Video(videoData);
+    const createdVideo = await video.save();
 
-  res.status(201).json({
-    success: true,
-    message: "Video uploaded successfully to content structure",
-    video: createdVideo
-  });
+    // Add video to hierarchical content structure
+    if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
+      const catIndex = parseInt(categoryIndex);
 
-} catch (error) {
-  // Clean up temp file on error
-  if (req.file && req.file.path) {
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting temp file on error:', err);
+      // Validate category index
+      if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
+        res.status(400);
+        throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
+      }
+
+      if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
+        const subIndex = parseInt(subcategoryIndex);
+
+        // Validate subcategory index
+        if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
+          subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
+          res.status(400);
+          throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
+        }
+
+        // Add to subcategory
+        course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
+      } else {
+        // Add to category directly
+        if (!course.content[catIndex].videos) {
+          course.content[catIndex].videos = [];
+        }
+        course.content[catIndex].videos.push(createdVideo._id);
+      }
+    } else {
+      // Add to legacy videos array
+      course.videos.push(createdVideo._id);
+    }
+
+    await course.save();
+
+    res.status(201).json({
+      success: true,
+      message: isYouTubeVideo ? "YouTube video added successfully to content structure" : "Video uploaded successfully to content structure",
+      video: {
+        _id: createdVideo._id,
+        title: createdVideo.title,
+        description: createdVideo.description,
+        duration: createdVideo.duration,
+        order: createdVideo.order,
+        isFree: createdVideo.isFree,
+        isPreview: createdVideo.isPreview
+        // Note: YouTube ID and video URLs are NOT returned for security
+      }
     });
-  }
 
-  console.error('Video upload error:', error);
-  res.status(500);
-  throw new Error("Failed to upload video: " + error.message);
-}
+  } catch (error) {
+    // Clean up temp file on error
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting temp file on error:', err);
+      });
+    }
+
+    console.error('Video upload error:', error);
+    res.status(500);
+    throw new Error("Failed to upload video: " + error.message);
+  }
 });
 
 module.exports = {

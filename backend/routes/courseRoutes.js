@@ -45,12 +45,28 @@ router.post(
   addVideoToCourse
 );
 
+// Add YouTube video to course (ADMIN ONLY) - New endpoint
+router.post(
+  "/admin/:id/youtube-videos",
+  protect,
+  admin,
+  addVideoToCourse
+);
+
 // Upload video to hierarchical content structure (ADMIN ONLY)
 router.post(
   "/admin/:id/content/videos",
   protect,
   admin,
   upload.single("video"),
+  uploadVideoToContent
+);
+
+// Add YouTube video to hierarchical content structure (ADMIN ONLY) - New endpoint
+router.post(
+  "/admin/:id/content/youtube-videos",
+  protect,
+  admin,
   uploadVideoToContent
 );
 
