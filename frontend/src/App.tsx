@@ -124,6 +124,7 @@ function App() {
         <Route path="/admin/current-affairs" element={<ManageCurrentAffairs />} />
         <Route path="/admin/notices" element={<AdminNoticeListPage />} />
         <Route path="/admin/notices/new" element={<AdminNoticeCreatePage />} />
+        <Route path="/admin/notices/:id/edit" element={<AdminNoticeCreatePage />} />
         <Route path="/registration-test" element={<RegistrationTest />} />
         <Route path="/dashboard-test" element={<StudentDashboardTest />} />
         <Route path="/study-materials/:id" element={<StudyMaterialDetailPage />} />

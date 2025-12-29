@@ -53,9 +53,9 @@ const createTestSeries = asyncHandler(async (req, res) => {
     level: level || 'Beginner',
     duration,
     language: language || 'English',
-    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-    requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
-    whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
+    tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim())) : [],
+    requirements: requirements ? (Array.isArray(requirements) ? requirements : requirements.split(',').map(req => req.trim())) : [],
+    whatYouWillLearn: whatYouWillLearn ? (Array.isArray(whatYouWillLearn) ? whatYouWillLearn : whatYouWillLearn.split(',').map(item => item.trim())) : [],
     content: content || [], // Initialize with hierarchical content structure
     validityPeriod: validityPeriod || 365,
     hasLiveTests: hasLiveTests || false,
@@ -158,9 +158,9 @@ const updateTestSeries = asyncHandler(async (req, res) => {
   testSeries.level = level || testSeries.level;
   testSeries.duration = duration || testSeries.duration;
   testSeries.language = language || testSeries.language;
-  testSeries.tags = tags ? tags.split(',').map(tag => tag.trim()) : testSeries.tags;
-  testSeries.requirements = requirements ? requirements.split(',').map(req => req.trim()) : testSeries.requirements;
-  testSeries.whatYouWillLearn = whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : testSeries.whatYouWillLearn;
+  testSeries.tags = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim())) : testSeries.tags;
+  testSeries.requirements = requirements ? (Array.isArray(requirements) ? requirements : requirements.split(',').map(req => req.trim())) : testSeries.requirements;
+  testSeries.whatYouWillLearn = whatYouWillLearn ? (Array.isArray(whatYouWillLearn) ? whatYouWillLearn : whatYouWillLearn.split(',').map(item => item.trim())) : testSeries.whatYouWillLearn;
   testSeries.validityPeriod = validityPeriod !== undefined ? validityPeriod : testSeries.validityPeriod;
   testSeries.hasLiveTests = hasLiveTests !== undefined ? hasLiveTests : testSeries.hasLiveTests;
   testSeries.liveTestSchedule = liveTestSchedule !== undefined ? liveTestSchedule : testSeries.liveTestSchedule;

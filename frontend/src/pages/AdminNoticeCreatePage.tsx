@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Save, Eye } from 'lucide-react';
@@ -7,7 +7,9 @@ import { ArrowLeft, Save, Eye } from 'lucide-react';
 const AdminNoticeCreatePage: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(!!id);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -21,25 +23,80 @@ const AdminNoticeCreatePage: React.FC = () => {
         link: ''
     });
 
+    useEffect(() => {
+        if (id) {
+            fetchNotice();
+        }
+    }, [id]);
+
+    const fetchNotice = async () => {
+        if (!user?.token) return;
+
+        try {
+            setInitialLoading(true);
+            const { data } = await axios.get(
+                `https://carrerpath-m48v.onrender.com/api/notices/admin/${id}`,
+                { headers: { Authorization: `Bearer ${user.token}` } }
+            );
+
+            if (data.success) {
+                const notice = data.data;
+                setFormData({
+                    title: notice.title || '',
+                    description: notice.description || '',
+                    content: notice.content || '',
+                    badge: notice.badge || 'new',
+                    category: notice.category || 'general',
+                    priority: notice.priority || 1,
+                    targetAudience: notice.targetAudience || 'all',
+                    publishDate: notice.publishDate ? new Date(notice.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                    expiryDate: notice.expiryDate ? new Date(notice.expiryDate).toISOString().split('T')[0] : '',
+                    link: notice.link || ''
+                });
+            }
+        } catch (err: any) {
+            console.error('Error fetching notice:', err);
+            alert(err.response?.data?.message || 'Failed to fetch notice');
+        } finally {
+            setInitialLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user?.token) return;
 
         try {
             setLoading(true);
-            const { data } = await axios.post(
-                'https://carrerpath-m48v.onrender.com/api/notices',
-                formData,
-                { headers: { Authorization: `Bearer ${user.token}` } }
-            );
 
-            if (data.success) {
-                alert('Notice created successfully!');
-                navigate('/admin/notices');
+            if (id) {
+                // Update existing notice
+                const { data } = await axios.put(
+                    `https://carrerpath-m48v.onrender.com/api/notices/admin/${id}`,
+                    formData,
+                    { headers: { Authorization: `Bearer ${user.token}` } }
+                );
+
+                if (data.success) {
+                    alert('Notice updated successfully!');
+                    navigate('/admin/notices');
+                }
+            } else {
+                // Create new notice
+                const { data } = await axios.post(
+                    'https://carrerpath-m48v.onrender.com/api/notices/admin',
+                    formData,
+                    { headers: { Authorization: `Bearer ${user.token}` } }
+                );
+
+                if (data.success) {
+                    alert('Notice created successfully!');
+                    navigate('/admin/notices');
+                }
             }
         } catch (err: any) {
-            console.error('Error creating notice:', err);
-            alert(err.response?.data?.message || 'Failed to create notice');
+            console.error('Error saving notice:', err);
+            alert(err.response?.data?.message || `Failed to ${id ? 'update' : 'create'} notice`);
         } finally {
             setLoading(false);
         }
@@ -62,6 +119,17 @@ const AdminNoticeCreatePage: React.FC = () => {
         );
     }
 
+    if (initialLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading notice...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -76,8 +144,8 @@ const AdminNoticeCreatePage: React.FC = () => {
                                 <ArrowLeft className="w-6 h-6" />
                             </Link>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Create Notice</h1>
-                                <p className="text-gray-600 mt-1">Add a new announcement or notification</p>
+                                <h1 className="text-3xl font-bold text-gray-900">{id ? 'Edit Notice' : 'Create Notice'}</h1>
+                                <p className="text-gray-600 mt-1">{id ? 'Update the announcement or notification' : 'Add a new announcement or notification'}</p>
                             </div>
                         </div>
                     </div>
@@ -273,12 +341,12 @@ const AdminNoticeCreatePage: React.FC = () => {
                                 {loading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Creating...
+                                        {id ? 'Updating...' : 'Creating...'}
                                     </>
                                 ) : (
                                     <>
                                         <Save className="w-4 h-4" />
-                                        Create Notice
+                                        {id ? 'Update Notice' : 'Create Notice'}
                                     </>
                                 )}
                             </button>

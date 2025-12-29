@@ -59,7 +59,7 @@ const createEbook = asyncHandler(async (req, res) => {
     coverImage: coverImageUrl,
     category,
     language: language || 'English',
-    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+    tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim())) : [],
     isbn,
     content: content || [], // Initialize with hierarchical content structure
     hasPreviewSample: hasPreviewSample !== undefined ? hasPreviewSample : true,
@@ -142,7 +142,7 @@ const updateEbook = asyncHandler(async (req, res) => {
     originalPrice: originalPrice !== undefined ? originalPrice : ebook.originalPrice,
     category: category || ebook.category,
     language: language || ebook.language,
-    tags: tags ? tags.split(',').map(tag => tag.trim()) : ebook.tags,
+    tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim())) : ebook.tags,
     isbn: isbn || ebook.isbn,
     hasPreviewSample: hasPreviewSample !== undefined ? hasPreviewSample : ebook.hasPreviewSample,
     previewPages: previewPages !== undefined ? previewPages : ebook.previewPages,

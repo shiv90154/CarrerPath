@@ -20,6 +20,66 @@ const {
    ADMIN ROUTES (E-BOOKS)
 =========================== */
 
+// Upload endpoints for ebook files and cover images
+router.post(
+  "/upload/ebook",
+  protect,
+  admin,
+  upload.single("ebook"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const cloudinary = require("../utils/cloudinary");
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'ebooks',
+        resource_type: 'raw', // For non-image files like PDFs
+      });
+
+      res.json({
+        url: result.secure_url,
+        fileSize: `${(req.file.size / (1024 * 1024)).toFixed(2)} MB`,
+        message: "Ebook file uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Ebook upload error:', error);
+      res.status(500).json({ message: "Failed to upload ebook file" });
+    }
+  }
+);
+
+router.post(
+  "/upload/cover",
+  protect,
+  admin,
+  upload.single("coverImage"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const cloudinary = require("../utils/cloudinary");
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'ebook-covers',
+        width: 300,
+        height: 400,
+        crop: 'fill',
+      });
+
+      res.json({
+        url: result.secure_url,
+        message: "Cover image uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Cover upload error:', error);
+      res.status(500).json({ message: "Failed to upload cover image" });
+    }
+  }
+);
+
 // Create ebook (PDF + cover image)
 router.post(
   "/admin",
