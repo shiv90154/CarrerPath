@@ -2,10 +2,8 @@ const asyncHandler = require("express-async-handler");
 const fs = require("fs");
 
 const Course = require("../models/Course");
-const Video = require("../models/Video");
 const Order = require("../models/Order");
 const User = require("../models/User");
-const cloudinary = require("../utils/cloudinary");
 const emailNotifications = require("../middleware/emailNotifications");
 
 /* =========================================================
@@ -32,8 +30,7 @@ const createCourse = asyncHandler(async (req, res) => {
     language,
     tags,
     requirements,
-    whatYouWillLearn,
-    content // New hierarchical content structure
+    whatYouWillLearn
   } = req.body;
 
   if (!title || !price || !category || !fullDescription) {
@@ -55,7 +52,6 @@ const createCourse = asyncHandler(async (req, res) => {
     tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
     requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
     whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
-    content: content || [], // Initialize with hierarchical content structure
     instructor: req.user._id,
   });
 
@@ -84,7 +80,6 @@ const createCourse = asyncHandler(async (req, res) => {
 const getCourses = asyncHandler(async (req, res) => {
   const courses = await Course.find({})
     .populate("instructor", "name email")
-    .populate("videos")
     .sort({ createdAt: -1 });
 
   res.json(courses);
@@ -97,11 +92,7 @@ const getCourses = asyncHandler(async (req, res) => {
 ========================================================= */
 const getCourseById = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id)
-    .populate("instructor", "name email")
-    .populate({
-      path: "videos",
-      options: { sort: { order: 1 } }
-    });
+    .populate("instructor", "name email");
 
   if (!course) {
     res.status(404);
@@ -138,7 +129,6 @@ const updateCourse = asyncHandler(async (req, res) => {
     tags,
     requirements,
     whatYouWillLearn,
-    content, // New hierarchical content structure
     isActive,
     isFeatured
   } = req.body;
@@ -159,11 +149,6 @@ const updateCourse = asyncHandler(async (req, res) => {
   course.isActive = isActive !== undefined ? isActive : course.isActive;
   course.isFeatured = isFeatured !== undefined ? isFeatured : course.isFeatured;
 
-  // Update hierarchical content structure if provided
-  if (content) {
-    course.content = content;
-  }
-
   const updatedCourse = await course.save();
   res.json(updatedCourse);
 });
@@ -181,74 +166,8 @@ const deleteCourse = asyncHandler(async (req, res) => {
     throw new Error("Course not found");
   }
 
-  // Delete all videos associated with this course
-  await Video.deleteMany({ course: course._id });
-
   await course.deleteOne();
-  res.json({ message: "Course and associated videos deleted successfully" });
-});
-
-/* =========================================================
-   @desc    Add video to course (YouTube ID only)
-   @route   POST /api/courses/admin/:id/videos
-   @access  Private/Admin
-========================================================= */
-const addVideoToCourse = asyncHandler(async (req, res) => {
-  if (req.user.role !== "admin") {
-    res.status(403);
-    throw new Error("Not authorized");
-  }
-
-  const { title, description, youtubeVideoId, duration, order } = req.body;
-  const courseId = req.params.id;
-
-  const course = await Course.findById(courseId);
-  if (!course) {
-    res.status(404);
-    throw new Error("Course not found");
-  }
-
-  // Validate YouTube video ID format (basic validation)
-  if (!youtubeVideoId || youtubeVideoId.length !== 11) {
-    res.status(400);
-    throw new Error("Invalid YouTube video ID. Must be 11 characters long.");
-  }
-
-  try {
-    // Create video document with YouTube ID only
-    const video = new Video({
-      title,
-      description,
-      youtubeVideoId,
-      duration: duration || '0:00',
-      order: order || 1,
-      course: courseId,
-    });
-
-    const createdVideo = await video.save();
-
-    // Add video to course
-    course.videos.push(createdVideo._id);
-    await course.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Video added successfully",
-      video: {
-        _id: createdVideo._id,
-        title: createdVideo.title,
-        description: createdVideo.description,
-        duration: createdVideo.duration,
-        order: createdVideo.order
-        // Note: YouTube ID is NOT returned for security
-      }
-    });
-
-  } catch (error) {
-    console.error('Video creation error:', error);
-    res.status(500);
-    throw new Error("Failed to add video: " + error.message);
-  }
+  res.json({ message: "Course deleted successfully" });
 });
 
 /* =========================================================
@@ -296,34 +215,18 @@ const getAllCoursesPublic = asyncHandler(async (req, res) => {
 });
 
 /* =========================================================
-   @desc    Get course by ID (Public with content lock)
+   @desc    Get course by ID (Public)
    @route   GET /api/courses/:id
    @access  Public / Optional Auth
 ========================================================= */
 const getCourseByIdPublic = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id)
-    .populate("instructor", "name bio avatar")
-    .populate({
-      path: "videos",
-      options: { sort: { order: 1 } }
-    });
+    .populate("instructor", "name bio avatar");
 
   if (!course || !course.isActive) {
     res.status(404);
     throw new Error("Course not found");
   }
-
-  // Manually populate videos in content structure
-  await Course.populate(course, [
-    {
-      path: "content.subcategories.videos",
-      model: "Video"
-    },
-    {
-      path: "content.videos",
-      model: "Video"
-    }
-  ]);
 
   const user = req.user || null;
   let hasPurchased = false;
@@ -357,38 +260,10 @@ const getCourseByIdPublic = asyncHandler(async (req, res) => {
     }
   }
 
-  if (hasPurchased) {
-    return res.json({
-      ...course.toObject(),
-      hasPurchased: true,
-      accessType: 'full'
-    });
-  }
-
-  // Filter content based on access for non-purchasers
-  const filteredContent = course.content
-    .filter(category => category) // Filter out null categories
-    .map(category => ({
-      ...category.toObject(),
-      subcategories: category.subcategories
-        .filter(subcategory => subcategory) // Filter out null subcategories
-        .map(subcategory => ({
-          ...subcategory.toObject(),
-          videos: subcategory.videos ? subcategory.videos.filter(v => v && (v.isFree === true || v.isPreview === true)) : []
-        })),
-      videos: category.videos ? category.videos.filter(v => v && (v.isFree === true || v.isPreview === true)) : []
-    }));
-
-  // Only show free videos and preview videos for non-purchasers (legacy support)
-  const freeVideos = course.videos.filter(v => v && (v.isFree === true || v.isPreview === true));
-
   res.json({
     ...course.toObject(),
-    content: filteredContent,
-    videos: freeVideos,
-    hasPurchased: false,
-    accessType: 'limited',
-    totalLockedVideos: course.videos.length - freeVideos.length
+    hasPurchased,
+    accessType: hasPurchased ? 'full' : 'limited'
   });
 });
 
@@ -414,227 +289,13 @@ const checkCourseAccess = asyncHandler(async (req, res) => {
   });
 });
 
-/* =========================================================
-   @desc    Get video by ID with access control
-   @route   GET /api/courses/:courseId/videos/:videoId
-   @access  Private
-========================================================= */
-const getVideoById = asyncHandler(async (req, res) => {
-  const { courseId, videoId } = req.params;
-  const userId = req.user._id;
-
-  const video = await Video.findById(videoId).populate('course');
-
-  if (!video || video.course._id.toString() !== courseId) {
-    res.status(404);
-    throw new Error("Video not found");
-  }
-
-  // Check if video is free or user has purchased the course
-  if (video.isFree || video.isPreview) {
-    // Increment view count
-    video.views += 1;
-    await video.save();
-
-    return res.json(video);
-  }
-
-  // Check if user has purchased the course
-  const order = await Order.findOne({
-    user: userId,
-    itemType: 'course',
-    itemId: courseId,
-    status: 'approved',
-  });
-
-  if (!order) {
-    res.status(403);
-    throw new Error("Please purchase the course to access this video");
-  }
-
-  // Increment view count
-  video.views += 1;
-  await video.save();
-
-  // Update user's progress
-  const user = await User.findById(userId);
-  const courseProgress = user.purchasedCourses.find(
-    pc => pc.course.toString() === courseId
-  );
-
-  if (courseProgress && !courseProgress.completedVideos.includes(videoId)) {
-    courseProgress.completedVideos.push(videoId);
-
-    // Calculate progress percentage
-    const totalVideos = await Video.countDocuments({ course: courseId });
-    courseProgress.progress = Math.round((courseProgress.completedVideos.length / totalVideos) * 100);
-
-    await user.save();
-  }
-
-  res.json(video);
-});
-
-/* =========================================================
-   @desc    Upload video to hierarchical content structure
-   @route   POST /api/courses/admin/:id/content/videos
-   @access  Private/Admin
-========================================================= */
-const uploadVideoToContent = asyncHandler(async (req, res) => {
-  if (req.user.role !== "admin") {
-    res.status(403);
-    throw new Error("Not authorized");
-  }
-
-  const {
-    title,
-    description,
-    youtubeVideoId,
-    duration,
-    order,
-    isFree,
-    isPreview,
-    categoryIndex,
-    subcategoryIndex
-  } = req.body;
-  const courseId = req.params.id;
-
-  // Video upload request received
-
-  const course = await Course.findById(courseId);
-  if (!course) {
-    res.status(404);
-    throw new Error("Course not found");
-  }
-
-  // Course content structure validated
-
-  // Check if this is a YouTube video or file upload
-  const isYouTubeVideo = youtubeVideoId && youtubeVideoId.trim();
-  const isFileUpload = req.file;
-
-  if (!isYouTubeVideo && !isFileUpload) {
-    res.status(400);
-    throw new Error("Either YouTube video ID or video file is required");
-  }
-
-  try {
-    let videoData = {
-      title,
-      description,
-      duration: duration || '0:00',
-      order: order || 1,
-      isFree: isFree === "true" || isFree === true,
-      isPreview: isPreview === "true" || isPreview === true,
-      course: courseId,
-    };
-
-    if (isYouTubeVideo) {
-      // Handle YouTube video
-      if (youtubeVideoId.length !== 11) {
-        res.status(400);
-        throw new Error("Invalid YouTube video ID. Must be 11 characters long.");
-      }
-      videoData.youtubeVideoId = youtubeVideoId;
-    } else {
-      // Handle file upload
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        resource_type: "video",
-        folder: `institute-website/courses/${course._id}/videos`,
-        transformation: [
-          { quality: "auto" },
-          { fetch_format: "auto" }
-        ]
-      });
-
-      // Clean up temp file asynchronously
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting temp file:', err);
-      });
-
-      videoData.videoUrl = result.secure_url;
-      videoData.thumbnailUrl = result.secure_url.replace(/\.[^/.]+$/, ".jpg");
-    }
-
-    // Create video document
-    const video = new Video(videoData);
-    const createdVideo = await video.save();
-
-    // Add video to hierarchical content structure
-    if (categoryIndex !== undefined && categoryIndex !== null && categoryIndex !== '') {
-      const catIndex = parseInt(categoryIndex);
-
-      // Validate category index
-      if (isNaN(catIndex) || catIndex < 0 || !course.content || catIndex >= course.content.length || !course.content[catIndex]) {
-        res.status(400);
-        throw new Error(`Invalid category index: ${categoryIndex}. Course has ${course.content ? course.content.length : 0} categories.`);
-      }
-
-      if (subcategoryIndex !== undefined && subcategoryIndex !== null && subcategoryIndex !== '') {
-        const subIndex = parseInt(subcategoryIndex);
-
-        // Validate subcategory index
-        if (isNaN(subIndex) || subIndex < 0 || !course.content[catIndex].subcategories ||
-          subIndex >= course.content[catIndex].subcategories.length || !course.content[catIndex].subcategories[subIndex]) {
-          res.status(400);
-          throw new Error(`Invalid subcategory index: ${subcategoryIndex}. Category ${catIndex} has ${course.content[catIndex].subcategories ? course.content[catIndex].subcategories.length : 0} subcategories.`);
-        }
-
-        // Add to subcategory
-        course.content[catIndex].subcategories[subIndex].videos.push(createdVideo._id);
-      } else {
-        // Add to category directly
-        if (!course.content[catIndex].videos) {
-          course.content[catIndex].videos = [];
-        }
-        course.content[catIndex].videos.push(createdVideo._id);
-      }
-    } else {
-      // Add to legacy videos array
-      course.videos.push(createdVideo._id);
-    }
-
-    await course.save();
-
-    res.status(201).json({
-      success: true,
-      message: isYouTubeVideo ? "YouTube video added successfully to content structure" : "Video uploaded successfully to content structure",
-      video: {
-        _id: createdVideo._id,
-        title: createdVideo.title,
-        description: createdVideo.description,
-        duration: createdVideo.duration,
-        order: createdVideo.order,
-        isFree: createdVideo.isFree,
-        isPreview: createdVideo.isPreview
-        // Note: YouTube ID and video URLs are NOT returned for security
-      }
-    });
-
-  } catch (error) {
-    // Clean up temp file on error
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting temp file on error:', err);
-      });
-    }
-
-    console.error('Video upload error:', error);
-    res.status(500);
-    throw new Error("Failed to upload video: " + error.message);
-  }
-});
-
 module.exports = {
   createCourse,
   getCourses,
   getCourseById,
   updateCourse,
   deleteCourse,
-  addVideoToCourse,
-  uploadVideoToContent,
   getAllCoursesPublic,
   getCourseByIdPublic,
   checkCourseAccess,
-  getVideoById,
 };

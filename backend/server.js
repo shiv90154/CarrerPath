@@ -13,6 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const resultRoutes = require('./routes/resultRoutes'); // New line
 const studyMaterialRoutes = require('./routes/studyMaterialRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const adminVideoRoutes = require('./routes/adminVideoRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 // Add after other routes
 const currentAffairRoutes = require('./routes/currentAffairRoutes');
@@ -56,6 +57,7 @@ app.use('/api/current-affairs', currentAffairRoutes);
 app.use('/api/studymaterials', studyMaterialRoutes);
 app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/videos', adminVideoRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/email', emailRoutes);
 

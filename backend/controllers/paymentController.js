@@ -49,8 +49,6 @@ const upload = multer({
 const createManualOrder = asyncHandler(async (req, res) => {
   const { itemType, itemId, amount } = req.body;
 
-  console.log('Creating manual Google Pay order:', { itemType, itemId, amount });
-
   // Validate required fields
   if (!itemType || !itemId || amount === undefined || amount === null) {
     res.status(400);

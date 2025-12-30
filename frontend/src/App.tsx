@@ -37,6 +37,7 @@ import AdminPaymentListPage from './pages/AdminPaymentListPage';
 import StudyMaterialPage from './pages/StudyMaterialPage';
 import AdminStudyMaterialListPage from './pages/AdminStudyMaterialListPage';
 import AdminStudyMaterialEditPage from './pages/AdminStudyMaterialEditPage';
+import AdminVideoManagementPage from './pages/AdminVideoManagementPage';
 import StudyMaterialDetailPage from './pages/StudyMaterialDetailPage';
 import AdminNoticeListPage from './pages/AdminNoticeListPage';
 import AdminNoticeCreatePage from './pages/AdminNoticeCreatePage';
@@ -118,6 +119,7 @@ function App() {
           <Route path="/admin/studymaterial" element={<AdminStudyMaterialListPage />} />
           <Route path="/admin/studymaterial/new" element={<AdminStudyMaterialEditPage />} />
           <Route path="/admin/studymaterial/:id/edit" element={<AdminStudyMaterialEditPage />} />
+          <Route path="/admin/videos" element={<AdminVideoManagementPage />} />
           <Route path="/admin/current-affairs" element={<ManageCurrentAffairs />} />
           <Route path="/admin/notices" element={<AdminNoticeListPage />} />
           <Route path="/admin/notices/new" element={<AdminNoticeCreatePage />} />
