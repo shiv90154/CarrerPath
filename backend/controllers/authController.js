@@ -7,12 +7,15 @@ const emailService = require('../utils/emailService');
 
 // Configure nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // or your email service
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
+
 
 // Store OTPs temporarily (in production, use Redis or database)
 const otpStore = new Map();
