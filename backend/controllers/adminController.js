@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const TestSeries = require('../models/TestSeries');
 const Ebook = require('../models/Ebook');
+const Video = require('../models/Video');
 const Order = require('../models/Order');
 const nodemailer = require('nodemailer');
 
@@ -25,6 +26,15 @@ const getAdminStats = asyncHandler(async (req, res) => {
         const totalCourses = await Course.countDocuments({});
         const totalTestSeries = await TestSeries.countDocuments({});
         const totalEbooks = await Ebook.countDocuments({});
+
+        // Safely get video count with error handling
+        let totalVideos = 0;
+        try {
+            totalVideos = await Video.countDocuments({});
+        } catch (videoError) {
+            console.warn('Warning: Could not fetch video count:', videoError.message);
+            totalVideos = 0;
+        }
 
         // Get orders and revenue
         const orders = await Order.find({ isPaid: true }).lean();
@@ -66,6 +76,7 @@ const getAdminStats = asyncHandler(async (req, res) => {
             totalCourses,
             totalTestSeries,
             totalEbooks,
+            totalVideos,
             totalOrders,
             totalRevenue,
             recentOrders,

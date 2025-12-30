@@ -10,7 +10,8 @@ import {
     Star, Sparkles, Crown, Gem, Rocket, Menu, X, Home,
     FileText, TestTube, BookOpenCheck, GraduationCap,
     CreditCard, LogOut, User, ChevronRight, Newspaper,
-    ChevronDown, Search, Filter, Download, Upload
+    ChevronDown, Search, Filter, Download, Upload, Video,
+    Play, Film, Monitor
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -18,6 +19,7 @@ interface DashboardStats {
     totalCourses: number;
     totalTestSeries: number;
     totalEbooks: number;
+    totalVideos?: number;
     totalRevenue: number;
     totalOrders: number;
     recentOrders: Array<{
@@ -93,6 +95,7 @@ const AdminDashboard: React.FC = () => {
             icon: BookOpen,
             children: [
                 { id: 'courses', name: 'Courses', icon: BookOpen, path: '/admin/courses', badge: stats?.totalCourses },
+                { id: 'videos', name: 'Video Management', icon: Video, path: '/admin/videos', badge: stats?.totalVideos },
                 { id: 'testseries', name: 'Test Series', icon: TestTube, path: '/admin/testseries', badge: stats?.totalTestSeries },
                 { id: 'ebooks', name: 'E-Books', icon: BookOpenCheck, path: '/admin/ebooks', badge: stats?.totalEbooks },
                 { id: 'studymaterials', name: 'Study Materials', icon: FileText, path: '/admin/studymaterial' },
@@ -397,7 +400,7 @@ const AdminDashboard: React.FC = () => {
                     ) : (
                         <>
                             {/* Stats Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -431,6 +434,24 @@ const AdminDashboard: React.FC = () => {
                                             Manage <ChevronRight className="w-4 h-4" />
                                         </Link>
                                         <span className="bg-white/20 rounded-full px-2 py-1 text-xs">Active</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-red-100 text-sm">Total Videos</p>
+                                            <p className="text-3xl font-bold">{stats?.totalVideos || 0}</p>
+                                        </div>
+                                        <div className="bg-white/20 rounded-lg p-3">
+                                            <Video className="w-8 h-8" />
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex items-center justify-between">
+                                        <Link to="/admin/videos" className="text-red-100 hover:text-white text-sm flex items-center gap-1">
+                                            Manage <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                        <span className="bg-white/20 rounded-full px-2 py-1 text-xs">YouTube</span>
                                     </div>
                                 </div>
 
@@ -472,7 +493,7 @@ const AdminDashboard: React.FC = () => {
                             </div>
 
                             {/* Quick Actions */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                                 <Link
                                     to="/admin/courses/new"
                                     className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-200"
@@ -483,7 +504,22 @@ const AdminDashboard: React.FC = () => {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-gray-900">Create Course</h3>
-                                            <p className="text-sm text-gray-600">Add new video course</p>
+                                            <p className="text-sm text-gray-600">Add new course</p>
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                <Link
+                                    to="/admin/videos"
+                                    className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+                                >
+                                    <div className="flex items-center space-x-4">
+                                        <div className="bg-red-100 rounded-lg p-3">
+                                            <Video className="w-6 h-6 text-red-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-gray-900">Manage Videos</h3>
+                                            <p className="text-sm text-gray-600">YouTube video library</p>
                                         </div>
                                     </div>
                                 </Link>

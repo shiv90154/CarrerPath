@@ -39,83 +39,105 @@ const getStudentCourses = asyncHandler(async (req, res) => {
 // @route   GET /api/student/testseries
 // @access  Private
 const getStudentTestSeries = asyncHandler(async (req, res) => {
-  const orders = await Order.find({
-    user: req.user._id,
-    testSeries: { $ne: null },
-    isPaid: true,
-  }).populate({
-    path: 'testSeries',
-    populate: {
-      path: 'instructor',
-      select: 'name'
-    }
-  });
+  try {
+    const orders = await Order.find({
+      user: req.user._id,
+      testSeries: { $ne: null },
+      isPaid: true,
+    }).populate({
+      path: 'testSeries',
+      populate: {
+        path: 'instructor',
+        select: 'name'
+      }
+    });
 
-  const testSeries = orders
-    .filter(order => order.testSeries) // Filter out orders without testSeries
-    .map(order => ({
-      ...order.testSeries.toObject(),
-      purchaseDate: order.createdAt,
-      orderId: order._id
-    }));
+    const testSeries = orders
+      .filter(order => order.testSeries) // Filter out orders without testSeries
+      .map(order => ({
+        ...order.testSeries.toObject(),
+        purchaseDate: order.createdAt,
+        orderId: order._id
+      }));
 
-  res.json(testSeries);
+    res.json(testSeries);
+  } catch (error) {
+    console.error('Get student test series error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch test series',
+      error: error.message
+    });
+  }
 });
 
 // @desc    Get student's purchased study materials
 // @route   GET /api/student/studymaterials
 // @access  Private
 const getStudentStudyMaterials = asyncHandler(async (req, res) => {
-  // Get both free and paid study materials that user has access to
-  const orders = await Order.find({
-    user: req.user._id,
-    'items.material': { $ne: null },
-    isPaid: true,
-  }).populate({
-    path: 'items.material',
-    populate: {
-      path: 'author',
-      select: 'name'
+  try {
+    // Get both free and paid study materials that user has access to
+    const orders = await Order.find({
+      user: req.user._id,
+      'items.material': { $ne: null },
+      isPaid: true,
+    }).populate({
+      path: 'items.material',
+      populate: {
+        path: 'author',
+        select: 'name'
+      }
+    });
+
+    // Get free study materials that user has accessed
+    let freeStudyMaterials = [];
+    try {
+      freeStudyMaterials = await StudyMaterial.find({
+        type: 'Free',
+        isActive: true
+      }).populate('author', 'name');
+    } catch (studyMaterialError) {
+      console.warn('Warning: Could not fetch free study materials:', studyMaterialError.message);
+      freeStudyMaterials = [];
     }
-  });
 
-  // Get free study materials that user has accessed
-  const freeStudyMaterials = await StudyMaterial.find({
-    type: 'Free',
-    isActive: true
-  }).populate('author', 'name');
+    // Combine paid materials from orders
+    const paidMaterials = [];
+    orders.forEach(order => {
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach(item => {
+          if (item.material) {
+            paidMaterials.push({
+              ...item.material.toObject(),
+              purchaseDate: order.createdAt,
+              orderId: order._id
+            });
+          }
+        });
+      }
+    });
 
-  // Combine paid materials from orders
-  const paidMaterials = [];
-  orders.forEach(order => {
-    if (order.items && Array.isArray(order.items)) {
-      order.items.forEach(item => {
-        if (item.material) {
-          paidMaterials.push({
-            ...item.material.toObject(),
-            purchaseDate: order.createdAt,
-            orderId: order._id
-          });
-        }
-      });
-    }
-  });
+    // Add free materials (simulate purchase date as first access)
+    const freeMaterials = freeStudyMaterials
+      .filter(material => material) // Filter out null materials
+      .map(material => ({
+        ...material.toObject(),
+        purchaseDate: material.createdAt, // Use creation date as "purchase" date for free materials
+        orderId: null
+      }));
 
-  // Add free materials (simulate purchase date as first access)
-  const freeMaterials = freeStudyMaterials
-    .filter(material => material) // Filter out null materials
-    .map(material => ({
-      ...material.toObject(),
-      purchaseDate: material.createdAt, // Use creation date as "purchase" date for free materials
-      orderId: null
-    }));
+    // Combine and sort by purchase date
+    const allMaterials = [...paidMaterials, ...freeMaterials].sort(
+      (a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate)
+    );
 
-  // Combine and sort by purchase date
-  const allMaterials = [...paidMaterials, ...freeMaterials].sort(
-    (a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate)
-  );
-
-  res.json(allMaterials);
+    res.json(allMaterials);
+  } catch (error) {
+    console.error('Get student study materials error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch study materials',
+      error: error.message
+    });
+  }
 });
 
 // @desc    Get student's purchased ebooks
@@ -171,101 +193,131 @@ const getStudentTestResults = asyncHandler(async (req, res) => {
 // @route   GET /api/student/payments
 // @access  Private
 const getStudentPaymentHistory = asyncHandler(async (req, res) => {
-  const orders = await Order.find({
-    user: req.user._id,
-    isPaid: true,
-  })
-    .populate('course', 'title')
-    .populate('testSeries', 'title')
-    .populate('ebook', 'title')
-    .sort({ createdAt: -1 });
+  try {
+    const orders = await Order.find({
+      user: req.user._id,
+      isPaid: true,
+    })
+      .populate('course', 'title')
+      .populate('testSeries', 'title')
+      .populate('ebook', 'title')
+      .sort({ createdAt: -1 });
 
-  const payments = orders.map(order => ({
-    _id: order._id,
-    totalPrice: order.totalPrice,
-    createdAt: order.createdAt,
-    paidAt: order.paidAt,
-    paymentMethod: order.paymentMethod,
-    productType: order.course ? 'Course' : order.testSeries ? 'Test Series' : 'E-Book',
-    productName: order.course ? order.course.title :
-      order.testSeries ? order.testSeries.title :
-        order.ebook ? order.ebook.title : 'Unknown',
-    status: 'Completed'
-  }));
+    const payments = orders.map(order => ({
+      _id: order._id,
+      totalPrice: order.totalPrice || 0,
+      createdAt: order.createdAt,
+      paidAt: order.paidAt,
+      paymentMethod: order.paymentMethod || 'Unknown',
+      productType: order.course ? 'Course' : order.testSeries ? 'Test Series' : 'E-Book',
+      productName: order.course ? order.course.title :
+        order.testSeries ? order.testSeries.title :
+          order.ebook ? order.ebook.title : 'Unknown',
+      status: 'Completed'
+    }));
 
-  res.json(payments);
+    res.json(payments);
+  } catch (error) {
+    console.error('Get student payment history error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch payment history',
+      error: error.message
+    });
+  }
 });
 
 // @desc    Get student dashboard stats
 // @route   GET /api/student/stats
 // @access  Private
 const getStudentStats = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
+  try {
+    const userId = req.user._id;
 
-  // Get counts
-  const totalCourses = await Order.countDocuments({
-    user: userId,
-    course: { $ne: null },
-    isPaid: true,
-  });
+    // Get counts with error handling
+    const totalCourses = await Order.countDocuments({
+      user: userId,
+      course: { $ne: null },
+      isPaid: true,
+    });
 
-  const totalTestSeries = await Order.countDocuments({
-    user: userId,
-    testSeries: { $ne: null },
-    isPaid: true,
-  });
+    const totalTestSeries = await Order.countDocuments({
+      user: userId,
+      testSeries: { $ne: null },
+      isPaid: true,
+    });
 
-  const totalEbooks = await Order.countDocuments({
-    user: userId,
-    ebook: { $ne: null },
-    isPaid: true,
-  });
+    const totalEbooks = await Order.countDocuments({
+      user: userId,
+      ebook: { $ne: null },
+      isPaid: true,
+    });
 
-  const totalStudyMaterials = await Order.countDocuments({
-    user: userId,
-    'items.material': { $ne: null },
-    isPaid: true,
-  }) + await StudyMaterial.countDocuments({ type: 'Free', isActive: true });
+    // Handle study materials count safely
+    let totalStudyMaterials = 0;
+    try {
+      const paidStudyMaterials = await Order.countDocuments({
+        user: userId,
+        'items.material': { $ne: null },
+        isPaid: true,
+      });
 
-  const totalTestsTaken = await Result.countDocuments({ user: userId });
+      const freeStudyMaterials = await StudyMaterial.countDocuments({
+        type: 'Free',
+        isActive: true
+      });
 
-  // Get total spent
-  const orders = await Order.find({
-    user: userId,
-    isPaid: true,
-  });
+      totalStudyMaterials = paidStudyMaterials + freeStudyMaterials;
+    } catch (studyMaterialError) {
+      console.warn('Warning: Could not fetch study materials count:', studyMaterialError.message);
+      totalStudyMaterials = 0;
+    }
 
-  const totalSpent = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+    const totalTestsTaken = await Result.countDocuments({ user: userId });
 
-  // Get recent activity
-  const recentOrders = await Order.find({
-    user: userId,
-    isPaid: true,
-  })
-    .populate('course', 'title')
-    .populate('testSeries', 'title')
-    .populate('ebook', 'title')
-    .sort({ createdAt: -1 })
-    .limit(5);
+    // Get total spent
+    const orders = await Order.find({
+      user: userId,
+      isPaid: true,
+    });
 
-  const recentActivity = recentOrders.map(order => ({
-    type: 'purchase',
-    title: order.course ? order.course.title :
-      order.testSeries ? order.testSeries.title :
-        order.ebook ? order.ebook.title : 'Unknown',
-    date: order.createdAt,
-    amount: order.totalPrice
-  }));
+    const totalSpent = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
-  res.json({
-    totalCourses,
-    totalTestSeries,
-    totalEbooks,
-    totalStudyMaterials,
-    totalTestsTaken,
-    totalSpent,
-    recentActivity
-  });
+    // Get recent activity
+    const recentOrders = await Order.find({
+      user: userId,
+      isPaid: true,
+    })
+      .populate('course', 'title')
+      .populate('testSeries', 'title')
+      .populate('ebook', 'title')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentActivity = recentOrders.map(order => ({
+      type: 'purchase',
+      title: order.course ? order.course.title :
+        order.testSeries ? order.testSeries.title :
+          order.ebook ? order.ebook.title : 'Unknown',
+      date: order.createdAt,
+      amount: order.totalPrice
+    }));
+
+    res.json({
+      totalCourses,
+      totalTestSeries,
+      totalEbooks,
+      totalStudyMaterials,
+      totalTestsTaken,
+      totalSpent,
+      recentActivity
+    });
+  } catch (error) {
+    console.error('Student stats error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch student statistics',
+      error: error.message
+    });
+  }
 });
 
 // @desc    Get student's course progress
