@@ -182,7 +182,7 @@ const emailNotifications = {
                 ${message}
               </div>
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard" 
+                <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/dashboard" 
                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
                   Visit Dashboard 🚀
                 </a>

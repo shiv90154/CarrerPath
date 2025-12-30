@@ -36,7 +36,7 @@ const emailTemplates = {
             </ul>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/dashboard" 
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               Start Learning Now! 📚
             </a>
@@ -66,7 +66,7 @@ const emailTemplates = {
             <p style="color: #333; margin: 0;"><strong>👨‍🏫 Instructor:</strong> ${instructorName}</p>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/courses" 
                style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               Enroll Now! 🚀
             </a>
@@ -103,7 +103,7 @@ const emailTemplates = {
             Challenge yourself with our latest test series and track your progress!
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/test-series" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/test-series" 
                style="background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               Start Testing! 🎯
             </a>
@@ -130,7 +130,7 @@ const emailTemplates = {
             <p style="color: #333; margin: 0;"><strong>📅 Course Starts:</strong> ${startDate}</p>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/my-courses" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/my-courses" 
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               Access Course 📚
             </a>
@@ -165,7 +165,7 @@ const emailTemplates = {
             </div>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/my-courses" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/my-courses" 
                style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               Start Learning! 🚀
             </a>
@@ -194,7 +194,7 @@ const emailTemplates = {
             <div style="color: #666; margin-top: 10px;">${Math.round((score / totalQuestions) * 100)}% Accuracy</div>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/test-results" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/test-results" 
                style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               View Detailed Results 📈
             </a>
@@ -280,7 +280,7 @@ const emailTemplates = {
             </div>
           </div>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/users" 
+            <a href="${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/admin/users" 
                style="background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
               View User Details 👥
             </a>

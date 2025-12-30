@@ -58,7 +58,7 @@ import {
 } from './pages/landingcoursespages';
 import ScrollToTop from "./components/ScrollToTop";
 import AutoCallPopup from './components/AutoCallPopup';
-import SecurityProvider from './components/SecurityProvider';
+// import SecurityProvider from './components/SecurityProvider';
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
 import RefundPolicy from "./components/RefundPolicy";
@@ -68,7 +68,7 @@ import ManageCurrentAffairs from './pages/ManageCurrentAffairs';
 
 function App() {
   return (
-    <SecurityProvider>
+
       <div className="App">
         <ScrollToTop />
         <AutoCallPopup />
@@ -146,7 +146,7 @@ function App() {
         </Routes>
         <Footer />
       </div>
-    </SecurityProvider>
+
   );
 }
 

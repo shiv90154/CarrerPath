@@ -193,7 +193,7 @@ router.post('/password-reset', async (req, res) => {
 
         // Generate reset token (you should implement proper token generation)
         const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL || 'https://carrerpath-m48v.onrender.com'}/reset-password?token=${resetToken}`;
 
         // Save reset token to user (you should implement this in your User model)
         // user.resetPasswordToken = resetToken;
