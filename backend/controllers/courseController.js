@@ -38,49 +38,50 @@ const createCourse = asyncHandler(async (req, res) => {
     throw new Error("Title, price, category and full description are required");
   }
 
-  const course = new Course({
-    title,
-    description,
-    fullDescription,
-    price,
-    originalPrice: originalPrice || price,
-    image: image || "/images/sample.jpg",
-    category,
-    level: level || 'Beginner',
-    duration,
-    language: language || 'English',
-    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-    requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
-    whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
-    instructor: req.user._id,
-  });
-
-  const createdCourse = await course.save();
-
-  // Send new course notification to all users
   try {
-    await emailNotifications.notifyNewCourse({
-      title: createdCourse.title,
-      description: createdCourse.description,
-      instructor: createdCourse.instructor || 'Career Pathway Institute'
+    const course = new Course({
+      title,
+      description,
+      fullDescription,
+      price,
+      originalPrice: originalPrice || price,
+      image: image || "/images/sample.jpg",
+      category,
+      level: level || 'Beginner',
+      duration,
+      language: language || 'English',
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      requirements: requirements ? requirements.split(',').map(req => req.trim()) : [],
+      whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(',').map(item => item.trim()) : [],
+      instructor: req.user._id,
     });
-  } catch (emailError) {
-    console.error('New course notification error:', emailError);
-    // Don't fail course creation if email fails
-  }
 
-  res.status(201).json(createdCourse);
-} catch (error) {
-  // Handle duplicate slug error
-  if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
-    res.status(400);
-    throw new Error('A course with similar title already exists. Please use a different title.');
-  }
+    const createdCourse = await course.save();
 
-  // Handle other errors
-  res.status(500);
-  throw new Error('Failed to create course: ' + error.message);
-}
+    // Send new course notification to all users
+    try {
+      await emailNotifications.notifyNewCourse({
+        title: createdCourse.title,
+        description: createdCourse.description,
+        instructor: createdCourse.instructor || 'Career Pathway Institute'
+      });
+    } catch (emailError) {
+      console.error('New course notification error:', emailError);
+      // Don't fail course creation if email fails
+    }
+
+    res.status(201).json(createdCourse);
+  } catch (error) {
+    // Handle duplicate slug error
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
+      res.status(400);
+      throw new Error('A course with similar title already exists. Please use a different title.');
+    }
+
+    // Handle other errors
+    res.status(500);
+    throw new Error('Failed to create course: ' + error.message);
+  }
 });
 
 /* =========================================================
