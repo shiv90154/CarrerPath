@@ -325,11 +325,14 @@ const SingleCoursePage: React.FC = () => {
       <GooglePayModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        itemType="course"
-        itemId={course._id}
-        amount={course.price}
-        itemTitle={course.title}
-        onPaymentSuccess={handlePaymentSuccess}
+        product={{
+          id: course._id,
+          title: course.title,
+          price: course.price,
+          type: 'course' as const,
+          image: course.image
+        }}
+        onSuccess={handlePaymentSuccess}
       />
     </div>
   );

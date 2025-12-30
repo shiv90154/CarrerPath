@@ -88,8 +88,9 @@ const SecurityProvider = ({ children }: { children: React.ReactNode }) => {
         // Disable text selection globally
         document.body.style.userSelect = 'none';
         document.body.style.webkitUserSelect = 'none';
-        document.body.style.mozUserSelect = 'none';
-        document.body.style.msUserSelect = 'none';
+        // Use setProperty for browser-specific properties
+        document.body.style.setProperty('-moz-user-select', 'none');
+        document.body.style.setProperty('-ms-user-select', 'none');
 
         // Disable image dragging
         const images = document.querySelectorAll('img');
@@ -110,15 +111,13 @@ const SecurityProvider = ({ children }: { children: React.ReactNode }) => {
             document.removeEventListener('selectstart', handleSelectStart);
             document.body.style.userSelect = '';
             document.body.style.webkitUserSelect = '';
-            document.body.style.mozUserSelect = '';
-            document.body.style.msUserSelect = '';
+            // Reset browser-specific properties
+            document.body.style.removeProperty('-moz-user-select');
+            document.body.style.removeProperty('-ms-user-select');
         };
     }, []);
 
     return <>{children}</>;
-};
-
-return <>{children}</>;
 };
 
 export default SecurityProvider;

@@ -70,6 +70,17 @@ const createCourse = asyncHandler(async (req, res) => {
   }
 
   res.status(201).json(createdCourse);
+} catch (error) {
+  // Handle duplicate slug error
+  if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
+    res.status(400);
+    throw new Error('A course with similar title already exists. Please use a different title.');
+  }
+
+  // Handle other errors
+  res.status(500);
+  throw new Error('Failed to create course: ' + error.message);
+}
 });
 
 /* =========================================================
@@ -149,8 +160,25 @@ const updateCourse = asyncHandler(async (req, res) => {
   course.isActive = isActive !== undefined ? isActive : course.isActive;
   course.isFeatured = isFeatured !== undefined ? isFeatured : course.isFeatured;
 
-  const updatedCourse = await course.save();
-  res.json(updatedCourse);
+  // If title is being updated, reset slug to regenerate
+  if (title && title !== course.title) {
+    course.slug = undefined;
+  }
+
+  try {
+    const updatedCourse = await course.save();
+    res.json(updatedCourse);
+  } catch (error) {
+    // Handle duplicate slug error
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
+      res.status(400);
+      throw new Error('A course with similar title already exists. Please use a different title.');
+    }
+
+    // Handle other errors
+    res.status(500);
+    throw new Error('Failed to update course: ' + error.message);
+  }
 });
 
 /* =========================================================

@@ -106,14 +106,35 @@ CourseSchema.virtual('discountPercentage').get(function () {
 });
 
 // Update totalVideos when videos array changes
-CourseSchema.pre('save', function (next) {
-  // Auto-generate slug if not provided
+CourseSchema.pre('save', async function (next) {
+  // Auto-generate unique slug if not provided
   if (!this.slug && this.title) {
-    this.slug = this.title
+    let baseSlug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 100);
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Check if slug already exists and make it unique
+    while (true) {
+      const existingCourse = await mongoose.model('Course').findOne({
+        slug: slug,
+        _id: { $ne: this._id } // Exclude current document if updating
+      });
+
+      if (!existingCourse) {
+        break; // Slug is unique
+      }
+
+      // Generate new slug with counter
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
   }
 
   next();
